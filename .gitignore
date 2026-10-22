@@ -42,3 +42,7 @@ yarn-error.*
 
 # cache unduhan foto asli (scripts/gambar.mjs)
 .cache/
+
+# vercel
+.vercel
+.env*
