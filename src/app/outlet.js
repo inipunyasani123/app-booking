@@ -43,7 +43,7 @@ export default function Outlet() {
       </View>
 
       <View style={st.peta}>
-        <Gambar nama="peta.webp" lebar="100%" tinggi={220} alt="Peta ilustrasi: Kursi Putar di Jl. Tegel Kuno, seberang taman kota, dekat perempatan dan toko bangunan" />
+        <Gambar nama="peta.webp" lebar="100%" tinggi={220} alt="Peta ilustrasi: Kursi Putar di Jl. Tegel Kuno, seberang taman kota, dekat perempatan dan toko bangunan" prioritas />
         <View style={st.petaLabel}>
           <Ikon nama="pin" ukuran={18} warna={W.marun} />
           <T kecil style={F.b}>Peta ilustrasi, bukan peta sungguhan</T>
