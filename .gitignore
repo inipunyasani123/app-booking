@@ -39,3 +39,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# cache unduhan foto asli (scripts/gambar.mjs)
+.cache/

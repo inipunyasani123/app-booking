@@ -1,24 +1,58 @@
 {
   "expo": {
-    "name": "booking",
-    "slug": "booking",
+    "name": "Kursi Putar",
+    "slug": "app-booking",
+    "scheme": "kursiputar",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#F4EEE3",
+    "primaryColor": "#7A1F2B",
+    "description": "Demo aplikasi booking pangkas rambut & salon fiktif buatan PintuWeb.",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "id.pintuweb.demo.kursiputar"
     },
     "android": {
+      "package": "id.pintuweb.demo.kursiputar",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#7A1F2B",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "output": "static",
+      "favicon": "./assets/favicon.png",
+      "name": "Kursi Putar",
+      "shortName": "Kursi Putar",
+      "lang": "id",
+      "themeColor": "#7A1F2B",
+      "backgroundColor": "#F4EEE3"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://app-booking.pintuweb.id",
+          "sitemap": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#F4EEE3"
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "chunking": { "mode": "granular" }
     }
   }
 }

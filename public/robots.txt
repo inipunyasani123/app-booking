@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /karcis
+Disallow: /booking/kapster
+Disallow: /booking/waktu
+Disallow: /booking/konfirmasi
+
+Sitemap: https://app-booking.pintuweb.id/sitemap.xml
