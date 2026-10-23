@@ -1,3 +1,4 @@
+import { Children, Fragment, isValidElement } from 'react';
 import { useServerDocumentContext } from 'expo-router/html';
 import QRCode from 'qrcode';
 import { SITUS } from '../lib/data';
@@ -22,6 +23,20 @@ function qrPath(teks) {
 }
 
 const QR = qrPath(SITUS.url + '/');
+
+// Skrip bundel baru diminta sesudah first-contentful-paint (urutan tetap, async=false), supaya HTML statis
+// selalu tampil lebih dulu walau perangkat sibuk. Cadangan 1,5 dtk bila FCP tidak terlapor (mis. tab latar).
+function ratakan(n, out = []) {
+  Children.forEach(n, (c) => {
+    if (isValidElement(c) && c.type === Fragment) ratakan(c.props.children, out);
+    else if (c != null && c !== false) out.push(c);
+  });
+  return out;
+}
+const pemuat = (srcs) =>
+  `(function(){var s=${JSON.stringify(srcs)},j=0;function go(){if(j++)return;for(var i=0;i<s.length;i++){var e=document.createElement('script');e.src=s[i];e.async=false;document.body.appendChild(e)}}` +
+  `try{new PerformanceObserver(function(l,o){var a=l.getEntries();for(var i=0;i<a.length;i++)if(a[i].name==='first-contentful-paint'){o.disconnect();setTimeout(go,0);return}}).observe({type:'paint',buffered:true})}catch(x){setTimeout(go,0)}` +
+  `setTimeout(go,1500)})();`;
 
 const JSONLD = {
   '@context': 'https://schema.org',
@@ -103,6 +118,9 @@ const FITUR = [
 
 export default function Root({ children, pathname }) {
   const { headNodes, bodyNodes, htmlAttributes, bodyAttributes } = useServerDocumentContext();
+  const simpul = ratakan(bodyNodes);
+  const skrip = simpul.filter((e) => isValidElement(e) && e.type === 'script' && e.props.src);
+  const lain = simpul.filter((e) => !skrip.includes(e));
   const beranda = !pathname || pathname === '/' || pathname === '';
   return (
     <html lang="id" {...htmlAttributes}>
@@ -194,7 +212,8 @@ export default function Root({ children, pathname }) {
             Buat yang seperti ini →
           </a>
         </aside>
-        {bodyNodes}
+        {lain}
+        {skrip.length ? <script dangerouslySetInnerHTML={{ __html: pemuat(skrip.map((e) => e.props.src)) }} /> : null}
       </body>
     </html>
   );
