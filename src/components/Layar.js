@@ -9,7 +9,7 @@ import BilahTab from './BilahTab';
  * Kerangka satu layar: kepala (judul h1), isi bergulir, dan bilah aksi bawah opsional.
  * `besar` = gaya kepala tab utama; `kembali` = kepala tumpukan dengan tombol kembali.
  */
-export default function Layar({ judul, sub, kembali, induk = '/', kanan, bawah, children, besar, padat, latarKepala, sebelumJudul, tab }) {
+export default function Layar({ judul, sub, kembali, induk = '/', kanan, bawah, children, besar, padat, latarKepala, sebelumJudul, tab, bawahKepala, refGulir }) {
   const tepi = useTepi();
   const mundur = () => (router.canGoBack() ? router.back() : router.replace(induk));
   const isi = (
@@ -29,7 +29,8 @@ export default function Layar({ judul, sub, kembali, induk = '/', kanan, bawah, 
         </View>
         {kanan}
       </View>
-      <ScrollView style={st.gulir} contentContainerStyle={[st.isi, padat && { paddingHorizontal: 0 }]} keyboardShouldPersistTaps="handled">
+      {bawahKepala ? <View style={st.bawahKepala}>{bawahKepala}</View> : null}
+      <ScrollView ref={refGulir} style={st.gulir} contentContainerStyle={[st.isi, padat && { paddingHorizontal: 0 }]} keyboardShouldPersistTaps="handled">
         {children}
       </ScrollView>
       {bawah ? <View style={[st.bawah, { paddingBottom: tepi.bawah(12) }]}>{bawah}</View> : null}
@@ -52,6 +53,7 @@ const st = StyleSheet.create({
   kepalaTeks: { flex: 1, minWidth: 0 },
   judulKecil: { fontSize: 22, lineHeight: 28 },
   gulir: { flex: 1 },
+  bawahKepala: { paddingHorizontal: 16, paddingBottom: 8, backgroundColor: W.kertas, borderBottomWidth: 1, borderBottomColor: W.garis },
   isi: { paddingHorizontal: 16, paddingTop: 6, paddingBottom: 28, gap: 16 },
   bawah: {
     paddingHorizontal: 16,

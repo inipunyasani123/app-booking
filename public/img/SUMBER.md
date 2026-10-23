@@ -6,8 +6,11 @@ Semua usaha, orang, dan alamat di demo ini rekaan.
 Dibuat dari SVG di `scripts/gambar.mjs` (salinan SVG di `design/`), dirender dengan sharp.
 - `kapster-raka.webp`, `kapster-bayu.webp`, `kapster-wiryo.webp`, `kapster-laras.webp`, `kapster-sekar.webp` — ilustrasi tokoh kapster/penata rekaan, tanpa fitur wajah.
 - `peta.webp`, `peta-480.webp` — peta ilustrasi jalan rekaan (Jl. Tegel Kuno, Jl. Kenari, Jl. Kemuning); bukan peta sungguhan.
-- Ikon aplikasi & PWA (`assets/icon.png`, `public/icon-*.png`, `public/icon.svg`, `public/favicon.ico`, `public/apple-touch-icon.png`) dan motif tegel/belang (`src/components/pola-data.js`).
+- `gaya-fade-rendah.webp`, `gaya-mid-fade.webp`, `gaya-taper.webp`, `gaya-crop.webp`, `gaya-belah-pinggir.webp`, `gaya-undercut.webp`, `gaya-cepak.webp`, `gaya-pangkas-anak.webp` — katalog gaya: siluet kepala tampak samping tanpa wajah, buatan sendiri (23 Okt 2026).
+- `kursi-kosong.webp` — ilustrasi kursi pangkas kosong + tiang pangkas untuk keadaan kosong, buatan sendiri.
+- Ikon aplikasi & PWA (`assets/icon.png`, `public/icon-*.png`, `public/icon.svg`, `public/favicon.ico`, `public/apple-touch-icon.png`) dan motif jok kulit berkancing & belang tiang pangkas (`src/components/pola-data.js`).
 - `public/og.jpg` — komposisi tangkapan layar aplikasi ini sendiri.
+- QR di karcis & panel samping dibuat dari teks kode karcis/alamat situs (paket `qrcode`, MIT).
 
 ## Foto (CC0 / domain publik)
 Diolah oleh `scripts/gambar.mjs` (dipotong, dikecilkan; outlet diberi duotone marun-krem).

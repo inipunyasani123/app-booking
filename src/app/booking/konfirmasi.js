@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { W, F, R } from '../../lib/tema';
-import { kapsterById, PENGINGAT, OUTLET, CAP_PENUH, NILAI_HADIAH } from '../../lib/data';
+import { kapsterById, layananById, PENGINGAT, OUTLET, CAP_PENUH, NILAI_HADIAH, GAYA, gayaById, PANJANG_ATAS } from '../../lib/data';
 import { durasi, jam, jamDari, tanggal, rupiah, hariKe, menitKe, MENIT_MS } from '../../lib/waktu';
 import { useToko, hitungPesanan, buatBooking, ubahJadwal, capTerkumpul, tampilKode, bisaUbah } from '../../lib/store';
 import { kapsterKosong } from '../../lib/slot';
 import { usePesanan } from '../../lib/kait';
 import { JEDA_PESAN_MENIT } from '../../lib/data';
 import { meta } from '../../lib/seo';
+import { getarSukses } from '../../lib/getar';
 import Layar from '../../components/Layar';
 import { T, Judul, Label, Tombol, Kerangka, Kartu, Saklar, Garis } from '../../components/ui';
 import { Langkah, Avatar } from '../../components/booking';
 import Ikon from '../../components/Ikon';
+import Gambar from '../../components/Gambar';
 
 export function generateMetadata() {
   return meta('/booking/konfirmasi');
@@ -39,12 +41,15 @@ export default function Konfirmasi() {
   const [galat, setGalat] = useState('');
   useEffect(() => {
     if (!siap) return;
-    setNama(lama ? lama.nama : profil.nama);
-    setCatatan(lama ? lama.catatan : '');
+    setNama(lama ? lama.nama : pesan.untuk !== 'saya' && pesan.namaUntuk ? pesan.namaUntuk : profil.nama);
+    const g = q.gaya && gayaById[String(q.gaya)];
+    setCatatan(lama ? lama.catatan : g ? g.nama : '');
     setPengingat(lama ? lama.pengingat : profil.pengingat);
   }, [siap, lama?.kode]);
 
   const cap = capTerkumpul({ bookings, hadiahDipakai });
+  // Parameter URL baru dibaca setelah siap supaya HTML statis & hidrasi sama.
+  const labelNama = !siap ? 'Nama panggilan' : pesan.untuk === 'anak' ? 'Atas nama (anak)' : pesan.untuk === 'lain' ? 'Atas nama' : 'Nama panggilan';
   const valid = siap && layanan && kapster && mulai > 0 && kapsterById[kapster].layanan.includes(layanan);
   const h = hariKe(mulai);
   const m = menitKe(mulai);
@@ -81,7 +86,11 @@ export default function Konfirmasi() {
       ubahJadwal(lama.kode, { kapster, mulai });
       router.replace({ pathname: '/karcis', params: { kode: lama.kode, diubah: '1' } });
     } else {
-      const kode = buatBooking({ layanan, tambahan: tambah, kapster, mulai, nama, catatan, pengingat, otomatis: q.otomatis === '1', pakaiHadiah: hadiah });
+      const kode = buatBooking({
+        layanan, tambahan: tambah, kapster, mulai, nama, catatan, pengingat, otomatis: q.otomatis === '1', pakaiHadiah: hadiah,
+        untuk: { jenis: pesan.untuk, ...(pesan.privat ? { privat: true } : {}) },
+      });
+      getarSukses();
       router.replace({ pathname: '/karcis', params: { kode, baru: '1' } });
     }
   };
@@ -169,9 +178,10 @@ export default function Konfirmasi() {
         <View style={{ gap: 10 }}>
           <Judul level={2}>Data karcis</Judul>
           <View style={{ gap: 6 }}>
-            <Label nativeID="label-nama">Nama panggilan</Label>
-            <TextInput value={nama} onChangeText={setNama} aria-labelledby="label-nama" aria-label="Nama panggilan" maxLength={24} style={st.input} placeholder="Misalnya Ardi" placeholderTextColor={W.tintaLembut} />
+            <Label nativeID="label-nama">{labelNama}</Label>
+            <TextInput value={nama} onChangeText={setNama} aria-label={labelNama} maxLength={24} style={st.input} placeholder="Misalnya Ardi" placeholderTextColor={W.tintaLembut} />
           </View>
+          {siap && layananById[layanan]?.kat === 'pangkas' ? <PilihGaya catatan={catatan} ubah={setCatatan} anak={layanan === 'pangkas-anak'} /> : null}
           <View style={{ gap: 6 }}>
             <Label>Catatan untuk kapster (opsional)</Label>
             <TextInput
@@ -190,7 +200,7 @@ export default function Konfirmasi() {
       ) : null}
 
       {!lama && cap >= CAP_PENUH ? (
-        <Kartu style={{ backgroundColor: W.krem }}>
+        <Kartu style={{ backgroundColor: W.kuninganMuda }}>
           <Saklar label={`Pakai hadiah kartu cap (−${rupiah(NILAI_HADIAH)})`} ket="Kartu capmu sudah penuh." nilai={hadiah} ubah={setHadiah} />
         </Kartu>
       ) : null}
@@ -231,7 +241,50 @@ export default function Konfirmasi() {
   );
 }
 
+/** Dua ketukan: pilih gaya lalu panjang atas; hasilnya ditulis ke catatan untuk kapster. */
+function PilihGaya({ catatan, ubah, anak }) {
+  const [gaya, panjang] = catatan.split(' · ');
+  const daftar = anak ? GAYA.filter((g) => g.id === 'pangkas-anak' || g.id === 'cepak' || g.id === 'crop') : GAYA.filter((g) => g.id !== 'pangkas-anak');
+  const pilihGaya = (nama) => ubah([nama, panjang && PANJANG_ATAS.includes(panjang) ? panjang : null].filter(Boolean).join(' · '));
+  const pilihPanjang = (p) => ubah([gaya && GAYA.some((g) => g.nama === gaya) ? gaya : null, p].filter(Boolean).join(' · '));
+  return (
+    <View style={{ gap: 8 }}>
+      <Label>Gaya (ketuk untuk mengisi catatan)</Label>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 16 }} role="radiogroup" aria-label="Gaya potongan">
+        {daftar.map((g) => {
+          const aktif = gaya === g.nama;
+          return (
+            <Pressable key={g.id} role="radio" aria-checked={aktif} onPress={() => pilihGaya(g.nama)} style={({ pressed }) => [st.gaya, aktif && st.gayaAktif, pressed && !aktif && { backgroundColor: W.kertasTua }]}>
+              <Gambar nama={`gaya-${g.id}.webp`} lebar={72} tinggi={72} bulat={12} />
+              <Text style={[st.gayaNama, aktif && { color: W.marunTua }]} numberOfLines={2}>
+                {g.nama}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+      <View role="radiogroup" aria-label="Panjang bagian atas" style={st.panjangBaris}>
+        {PANJANG_ATAS.map((p) => {
+          const aktif = panjang === p || (!panjang && false);
+          return (
+            <Pressable key={p} role="radio" aria-checked={aktif} onPress={() => pilihPanjang(p)} style={({ pressed }) => [st.panjang, aktif && st.panjangAktif, pressed && !aktif && { backgroundColor: W.kertasTua }]}>
+              <Text style={[st.panjangTeks, aktif && { color: W.krem }]}>{p[0].toUpperCase() + p.slice(1)}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 const st = StyleSheet.create({
+  gaya: { width: 96, padding: 8, gap: 6, borderRadius: 14, borderWidth: 1.5, borderColor: W.garis, backgroundColor: W.putih, alignItems: 'center' },
+  gayaAktif: { borderColor: W.marun, backgroundColor: W.marunMuda },
+  gayaNama: { ...F.b, fontSize: 12.5, lineHeight: 16, color: W.tinta, textAlign: 'center' },
+  panjangBaris: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  panjang: { minHeight: 40, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1.5, borderColor: W.hijau, backgroundColor: W.putih, justifyContent: 'center' },
+  panjangAktif: { backgroundColor: W.hijau },
+  panjangTeks: { ...F.b, fontSize: 13, lineHeight: 18, color: W.hijau },
   waktu: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   waktuIkon: { width: 44, height: 44, borderRadius: 14, backgroundColor: W.hijau, alignItems: 'center', justifyContent: 'center' },
   kapster: { flexDirection: 'row', alignItems: 'center', gap: 12 },

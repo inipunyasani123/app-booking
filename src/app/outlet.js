@@ -27,7 +27,7 @@ export default function Outlet() {
   return (
     <Layar kembali judul="Info outlet" sub={`${OUTLET.nama} · ${OUTLET.jenis}`}>
       <View style={st.foto}>
-        <Gambar nama="outlet.webp" lebar="100%" tinggi={190} alt="Dua kursi pangkas kulit di depan cermin, lantai tegel kotak-kotak" prioritas />
+        <Gambar nama="outlet.webp" lebar="100%" tinggi={190} alt="Dua kursi pangkas kulit di depan cermin, lantai kotak-kotak" prioritas />
         {stt ? (
           <View style={[st.status, { backgroundColor: stt.kode === 'buka' ? W.hijau : W.marun }]}>
             <Text style={st.statusTeks}>
@@ -86,7 +86,7 @@ export default function Outlet() {
 
       <Kartu style={st.kontak}>
         <View style={st.pita}>
-          <Pola jenis="tegel" varian="mint" ukuran={24} />
+          <Pola jenis="belang" varian="pangkas" lebarBelang={5} />
         </View>
         <Judul level={2}>Tanya dulu?</Judul>
         <T kecil>Pesan WhatsApp terisi otomatis. Karena ini demo, nomor tujuan tidak dicantumkan; kamu bisa memilih kontak sendiri.</T>
@@ -141,7 +141,7 @@ const st = StyleSheet.create({
   barisGaris: { borderTopWidth: 1, borderTopColor: W.garis },
   barisIni: { backgroundColor: W.mint },
   kontak: { gap: 8, overflow: 'hidden', paddingTop: 30 },
-  pita: { position: 'absolute', left: 0, right: 0, top: 0, height: 14 },
+  pita: { position: 'absolute', left: 0, right: 0, top: 0, height: 12 },
   fasilitas: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   fasItem: { width: '47%', flexGrow: 1, gap: 4, padding: 14, borderRadius: R.besar, backgroundColor: W.putih, borderWidth: 1, borderColor: W.garis },
   fasIkon: { width: 36, height: 36, borderRadius: 12, backgroundColor: W.mint, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },

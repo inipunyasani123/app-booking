@@ -127,7 +127,7 @@ function Spanduk() {
       {b ? (
         <View style={st.spanduk}>
           <View style={st.spandukIkon}>
-            <Pola jenis="tegel" varian="marun" ukuran={22} />
+            <Pola jenis="kulit" varian="marun" ukuran={20} />
             <Ikon nama="lonceng" ukuran={20} warna={W.krem} />
           </View>
           <View style={{ flex: 1, gap: 2 }}>
@@ -137,15 +137,15 @@ function Spanduk() {
               {b.isi}
             </Text>
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-              {b.kode ? (
+              {b.kode || b.tautan ? (
                 <Tombol
                   kecil
                   varian="hijau"
-                  label="Lihat karcis"
+                  label={b.tautan ? 'Lihat antre' : 'Lihat karcis'}
                   onPress={() => {
                     bacaNotif(b.id);
                     tutupBanner();
-                    router.push({ pathname: '/karcis', params: { kode: b.kode } });
+                    router.push(b.tautan || { pathname: '/karcis', params: { kode: b.kode } });
                   }}
                 />
               ) : null}
@@ -188,7 +188,7 @@ const st = StyleSheet.create({
     elevation: 8,
   },
   spandukIkon: { width: 40, height: 40, borderRadius: 12, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: W.marun },
-  spandukApp: { ...F.b, fontSize: 11, lineHeight: 14, letterSpacing: 0.6, color: W.tintaLembut },
+  spandukApp: { ...F.b, fontSize: 12, lineHeight: 15, letterSpacing: 0.6, color: W.tintaLembut },
   spandukJudul: { ...F.b, fontSize: 15, lineHeight: 20, color: W.tinta },
   spandukIsi: { ...F.r, fontSize: 14, lineHeight: 20, color: W.tinta },
 });

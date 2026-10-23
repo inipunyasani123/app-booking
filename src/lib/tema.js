@@ -2,21 +2,23 @@ import { Platform } from 'react-native';
 
 export const WEB = Platform.OS === 'web';
 
-// Palet "kursi putar": kertas krem, marun kulit jok, mint porselen, hijau botol, kuningan.
-// Kontras teks diuji: tinta/tintaLembut/marun/hijau >= 4.5:1 di atas kertas, putih, kertasTua, dan mint.
+// Palet "kursi putar": mint porselen (permukaan utama, seperti kursi pangkas lama), marun kulit jok,
+// hijau botol, kuningan; krem kertas hanya untuk karcis & kartu cap.
+// Kontras teks diuji (23 Okt): tinta/tintaLembut/marun/hijau >= 5,7:1 di atas kertas, kertasTua, putih, mint, krem.
 export const W = {
-  kertas: '#F4EEE3',
-  kertasTua: '#EAE0CF',
-  putih: '#FFFCF6',
+  kertas: '#E3EFE8',
+  kertasTua: '#D2E5DA',
+  putih: '#FAFDFB',
   tinta: '#241A1B',
   tintaLembut: '#5B4C48',
-  garis: '#DCCFBC',
-  garisTegas: '#B9A88F',
+  garis: '#C6DBCF',
+  garisTegas: '#6F977F',
+  garisKarcis: '#E3D3B6',
   marun: '#7A1F2B',
   marunTua: '#5A1520',
   marunMuda: '#F2DEDB',
-  mint: '#D3E8DC',
-  mintTua: '#B7D7C5',
+  mint: '#C2DFCD',
+  mintTua: '#A4CDB5',
   hijau: '#1E5442',
   hijauTua: '#143A2E',
   kuningan: '#B8853A',

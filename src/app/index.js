@@ -1,15 +1,14 @@
 import { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { W, F, R, angkaTabel } from '../lib/tema';
-import { useToko, capTerkumpul } from '../lib/store';
-import { KAPSTER, OUTLET, layananById, CAP_PENUH, kapsterUntuk } from '../lib/data';
-import { sapaan, hitungMundur, sebutanHari, hariKe, jamDari, jam, HARI_PENDEK, hariPekan, durasi, tanggal, rupiah } from '../lib/waktu';
-import { slotTerdekat, jadwalKapster } from '../lib/slot';
-import { statusOutlet } from '../lib/status';
+import { useToko, capTerkumpul, aturPengingat, tutupPanduan } from '../lib/store';
+import { KAPSTER, OUTLET, layananById, CAP_PENUH, kapsterUntuk, ANTRE_DETIK_PER_ORANG } from '../lib/data';
+import { sapaan, hitungMundur, sebutanHari, hariKe, jamDari, jam, HARI_PENDEK, HARI, hariPekan, durasi, tanggal, rupiah, pada } from '../lib/waktu';
+import { slotTerdekat, jadwalKapster, kondisiAntre } from '../lib/slot';
 import { meta } from '../lib/seo';
 import Layar from '../components/Layar';
-import { T, Judul, Label, Tombol, TombolIkon, Kerangka, Kartu, Taut } from '../components/ui';
+import { T, Judul, Label, Tombol, TombolIkon, Kerangka, Kartu, Taut, Saklar } from '../components/ui';
 import { Karcis, Avatar } from '../components/booking';
 import Pola from '../components/Pola';
 import Ikon from '../components/Ikon';
@@ -27,28 +26,20 @@ export default function Beranda() {
   const favorit = useToko((s) => s.favorit);
   const notif = useToko((s) => s.notif);
   const hadiahDipakai = useToko((s) => s.hadiahDipakai);
+  const antre = useToko((s) => s.antre);
+  const panduanTutup = useToko((s) => s.panduanTutup);
   const belum = notif.filter((n) => !n.dibaca).length;
+  const menit = Math.floor(sekarang / 60000);
 
-  const berikut = useMemo(
-    () => bookings.filter((b) => b.status === 'aktif').sort((a, b) => a.mulai - b.mulai)[0],
-    [bookings],
-  );
+  const berikut = useMemo(() => bookings.filter((b) => b.status === 'aktif').sort((a, b) => a.mulai - b.mulai)[0], [bookings]);
   const cap = capTerkumpul({ bookings, hadiahDipakai });
   const layananCepat = layananById[favorit[0]] || layananById['pangkas-reguler'];
   const terdekat = useMemo(() => {
     if (!siap) return [];
-    return slotTerdekat({
-      durasi: layananCepat.menit,
-      kapsterIds: kapsterUntuk(layananCepat.id).map((k) => k.id),
-      bookings,
-      sekarang,
-      jumlah: 4,
-      jarak: 45,
-    });
-    // sekarang berubah tiap 15 dtk; cukup hitung ulang per menit
-  }, [siap, layananCepat, bookings, Math.floor(sekarang / 60000)]);
+    return slotTerdekat({ durasi: layananCepat.menit, kapsterIds: kapsterUntuk(layananCepat.id).map((k) => k.id), bookings, sekarang, jumlah: 4, jarak: 45 });
+  }, [siap, layananCepat, bookings, menit]);
+  const ka = useMemo(() => (siap ? kondisiAntre(sekarang, bookings) : null), [siap, bookings, Math.floor(menit / 1)]);
   const hIni = hariKe(sekarang);
-  const stt = siap ? statusOutlet(sekarang) : null;
 
   return (
     <Layar
@@ -56,76 +47,98 @@ export default function Beranda() {
       tab
       judul="Kursi Putar"
       sub={`${OUTLET.jenis} · Blitar`}
-      kanan={
-        <TombolIkon
-          ikon="lonceng"
-          label={siap && belum ? `Notifikasi, ${belum} belum dibaca` : 'Notifikasi'}
-          href="/notifikasi"
-          badge={siap && belum ? String(belum) : null}
-        />
-      }
+      kanan={<TombolIkon ikon="lonceng" label={siap && belum ? `Notifikasi, ${belum} belum dibaca` : 'Notifikasi'} href="/notifikasi" badge={siap && belum ? String(belum) : null} />}
     >
       <View style={st.sapa}>
         <T style={[F.sb, { fontSize: 17, lineHeight: 24 }]}>{siap ? `${sapaan(sekarang)}, ${nama}.` : 'Selamat datang.'}</T>
-        <T lembut>Pilih kapster, lihat jam yang masih kosong, datang tanpa antre.</T>
+        <T lembut>Booking jam kosong atau ambil nomor antre, lalu bayar di kasir.</T>
       </View>
 
-      {/* Jadwal berikutnya */}
+      {/* Jadwal berikutnya: karcis ringkas + pengingat langsung di kartu */}
       <View style={{ gap: 8 }}>
-        <View style={st.kepalaBagian}>
-          <Judul level={2}>Jadwal berikutnya</Judul>
-          {siap && berikut ? <T kecil style={[F.b, { color: W.hijau }]}>{hitungMundur(berikut.mulai, sekarang)}</T> : null}
-        </View>
+        <Judul level={2}>Jadwal berikutnya</Judul>
         {!siap ? (
-          <Kerangka tinggi={241} />
+          <Kerangka tinggi={262} />
         ) : berikut ? (
-          <Taut href={{ pathname: '/karcis', params: { kode: berikut.kode } }} gaya={({ pressed }) => pressed && { opacity: 0.85 }}>
-              <Karcis b={berikut} />
+          <View style={st.jadwal}>
+            <Taut href={{ pathname: '/karcis', params: { kode: berikut.kode } }} gaya={({ pressed }) => pressed && { opacity: 0.85 }}>
+              <Karcis b={berikut} ringkas />
             </Taut>
+            <View style={st.jadwalBawah}>
+              <T kecil style={[F.b, { color: W.hijau, flex: 1 }]}>
+                {hitungMundur(berikut.mulai, sekarang)[0].toUpperCase() + hitungMundur(berikut.mulai, sekarang).slice(1)} · datang 10 menit lebih awal
+              </T>
+              <Link href={{ pathname: '/karcis', params: { kode: berikut.kode } }} style={st.tautan}>
+                Lihat karcis
+              </Link>
+            </View>
+            <Saklar label="Ingatkan 2 jam sebelumnya" nilai={berikut.pengingat.includes('2h')} ubah={(v) => aturPengingat(berikut.kode, '2h', v)} />
+          </View>
         ) : (
-          <Kartu style={[st.kosong, { paddingTop: 30 }]}>
-            <View style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 14 }}>
-                <Pola jenis="tegel" varian="mint" ukuran={24} />
-              </View>
-            <T style={F.b}>Belum ada jadwal.</T>
-            <T kecil lembut>Pilih layanan dan jam yang cocok; karcisnya langsung muncul di sini.</T>
-            <Tombol label="Cari jam kosong" href="/booking" ikonKanan="kanan" style={{ alignSelf: 'flex-start', marginTop: 6 }} />
+          <Kartu style={st.kosong}>
+            <Gambar nama="kursi-kosong.webp" lebar={96} tinggi={96} />
+            <View style={{ flex: 1, gap: 4 }}>
+              <T style={F.b}>Kursimu belum dipesan.</T>
+              <T kecil lembut>Pilih layanan dan jam kosong; karcisnya langsung muncul di sini.</T>
+              <Tombol kecil label="Cari jam kosong" href="/booking" ikonKanan="kanan" style={{ alignSelf: 'flex-start', marginTop: 4 }} />
+            </View>
           </Kartu>
         )}
       </View>
 
-      {/* Bento: status outlet + kartu cap */}
+      {/* Bento: antre datang langsung + kartu cap */}
       <View style={st.duo}>
-        <Taut href="/outlet" gaya={({ pressed }) => [st.ubin, st.ubinMint, pressed && { opacity: 0.85 }]}>
-            <View style={st.ubinPita}>
-              <Pola jenis="tegel" varian="mint" ukuran={30} />
-            </View>
-            <Label>Outlet sekarang</Label>
-            {stt ? (
-              <>
-                <Text style={[st.ubinBesar, { color: stt.kode === 'buka' ? W.hijau : W.marun }]}>{stt.judul}</Text>
-                <T kecil style={F.sb}>{stt.ket}</T>
-              </>
-            ) : (
-              <>
-                <Text style={st.ubinBesar}>Jam buka</Text>
-                <T kecil style={F.sb}>Lihat jadwal outlet</T>
-              </>
-            )}
-          </Taut>
+        <UbinAntre ka={ka} antre={antre} sekarang={sekarang} hIni={hIni} />
         <Taut href="/profil" gaya={({ pressed }) => [st.ubin, st.ubinKrem, pressed && { opacity: 0.85 }]}>
-            <Label warna={W.marun}>Kartu cap</Label>
-            <Text style={[st.ubinBesar, angkaTabel]}>
-              {siap ? Math.min(cap, CAP_PENUH) : '–'}
-              <Text style={st.ubinPer}>/{CAP_PENUH}</Text>
-            </Text>
-            <View style={st.titikCap} aria-hidden>
-              {Array.from({ length: CAP_PENUH }).map((_, i) => (
-                <View key={i} style={[st.titik, siap && i < cap && st.titikIsi]} />
+          <Label warna={W.marunTua}>Kartu cap</Label>
+          <Text style={[st.ubinBesar, angkaTabel]}>
+            {siap ? Math.min(cap, CAP_PENUH) : '–'}
+            <Text style={st.ubinPer}>/{CAP_PENUH}</Text>
+          </Text>
+          <View style={st.titikCap} aria-hidden>
+            {Array.from({ length: CAP_PENUH }).map((_, i) => (
+              <View key={i} style={[st.titik, siap && i < cap && st.titikIsi]} />
+            ))}
+          </View>
+          <Text style={st.aksiUbin}>{siap && cap >= CAP_PENUH ? 'Pakai potongan' : 'Lihat kartu'}</Text>
+        </Taut>
+      </View>
+
+      {siap && !panduanTutup ? (
+        <View style={st.panduan}>
+          <View style={st.panduanPita}>
+            <Pola jenis="belang" varian="pangkas" lebarBelang={5} />
+          </View>
+          <View style={{ flex: 1, gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Judul level={2} style={{ flex: 1, fontSize: 18, lineHeight: 24 }}>
+                Baru di demo ini?
+              </Judul>
+              <TombolIkon ikon="silang" label="Tutup panduan" onPress={() => tutupPanduan(true)} ukuran={44} />
+            </View>
+            <T kecil>Tiga hal yang bisa langsung dicoba. Semua data rekaan dan mengikuti jam WIB.</T>
+            <View role="list" style={{ gap: 6 }}>
+              {[
+                { no: 1, teks: 'Booking jam kosong sampai karcis terbit', href: '/booking' },
+                { no: 2, teks: `Ambil nomor antre (maju tiap ${ANTRE_DETIK_PER_ORANG} detik)`, href: '/antre' },
+                { no: 3, teks: 'Buka karcis, coba “Coba pengingat sekarang”', href: berikut ? { pathname: '/karcis', params: { kode: berikut.kode } } : '/jadwal' },
+              ].map((x) => (
+                <View key={x.no} role="listitem">
+                  <Taut href={x.href} gaya={({ pressed }) => [st.panduanItem, pressed && { backgroundColor: W.mint }]}>
+                    <View style={st.panduanNo}>
+                      <Text style={st.panduanNoTeks}>{x.no}</Text>
+                    </View>
+                    <T kecil style={[F.sb, { flex: 1 }]}>
+                      {x.teks}
+                    </T>
+                    <Ikon nama="kanan" ukuran={18} warna={W.hijau} />
+                  </Taut>
+                </View>
               ))}
             </View>
-          </Taut>
-      </View>
+          </View>
+        </View>
+      ) : null}
 
       {/* Jam kosong terdekat */}
       <Kartu style={{ gap: 12 }}>
@@ -155,14 +168,7 @@ export default function Beranda() {
               })}
           {siap && !terdekat.length ? <T lembut>Sepekan ke depan sudah penuh. Coba layanan lain.</T> : null}
         </View>
-        <Tombol
-          varian="garis"
-          kecil
-          label="Lihat semua jam"
-          ikonKanan="kanan"
-          href={{ pathname: '/booking/kapster', params: { layanan: layananCepat.id } }}
-          style={{ alignSelf: 'flex-start' }}
-        />
+        <Tombol varian="garis" kecil label="Lihat semua jam" ikonKanan="kanan" href={{ pathname: '/booking/kapster', params: { layanan: layananCepat.id } }} style={{ alignSelf: 'flex-start' }} />
       </Kartu>
 
       {/* Kapster bertugas */}
@@ -178,19 +184,17 @@ export default function Beranda() {
             const j = siap ? jadwalKapster(k, hIni) : true;
             return (
               <View key={k.id} role="listitem" style={{ flex: 1 }}>
-                <Taut href={`/kapster/${k.id}`}
-                    gaya={({ pressed }) => [st.kapster, pressed && { opacity: 0.8 }]}
-                  >
-                    <View style={!j && { opacity: 0.45 }}>
-                      <Avatar id={k.id} ukuran={58} cincin />
-                    </View>
-                    <T kecil style={F.b} numberOfLines={1}>
-                      {k.nama.replace('Pak ', '')}
-                    </T>
-                    <T kecil lembut style={{ fontSize: 12 }} numberOfLines={1}>
-                      {siap ? (j ? `s.d. ${jam(j.tutup)}` : 'Libur') : k.peran.split(' ')[0]}
-                    </T>
-                  </Taut>
+                <Taut href={`/kapster/${k.id}`} gaya={({ pressed }) => [st.kapster, pressed && { opacity: 0.8 }]}>
+                  <View style={!j && { opacity: 0.45 }}>
+                    <Avatar id={k.id} ukuran={58} cincin />
+                  </View>
+                  <T kecil style={F.b} numberOfLines={1}>
+                    {k.nama.replace('Pak ', '')}
+                  </T>
+                  <T kecil lembut style={{ fontSize: 12 }} numberOfLines={1}>
+                    {siap ? (j ? `s.d. ${jam(j.tutup)}` : 'Libur') : k.peran.split(' ')[0]}
+                  </T>
+                </Taut>
               </View>
             );
           })}
@@ -198,18 +202,17 @@ export default function Beranda() {
       </View>
 
       {/* Outlet */}
-      <Taut href="/outlet" aria-label="Info outlet: alamat, jam buka, dan peta" gaya={({ pressed }) => [st.outlet, pressed && { opacity: 0.9 }]}>
-          <Gambar nama="outlet.webp" lebar="100%" tinggi={168} alt="Dua kursi pangkas kulit di depan cermin, lantai tegel kotak-kotak" />
-          <View style={st.outletTeks}>
-            <View style={{ flex: 1, gap: 2 }}>
-              <T style={F.b}>{OUTLET.alamat}</T>
-              <T kecil lembut>{OUTLET.patokan}</T>
-            </View>
-            <Ikon nama="kanan" warna={W.marun} />
+      <Taut href="/outlet" gaya={({ pressed }) => [st.outlet, pressed && { opacity: 0.9 }]}>
+        <Gambar nama="outlet.webp" lebar="100%" tinggi={168} alt="Dua kursi pangkas kulit di depan cermin, lantai kotak-kotak" />
+        <View style={st.outletTeks}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <T style={F.b}>{OUTLET.alamat}</T>
+            <T kecil lembut>{OUTLET.patokan}</T>
           </View>
-        </Taut>
+          <Ikon nama="kanan" warna={W.marun} />
+        </View>
+      </Taut>
 
-      {/* Favorit */}
       {siap && favorit.length ? (
         <View style={{ gap: 10 }}>
           <Judul level={2}>Layanan favoritmu</Judul>
@@ -219,10 +222,10 @@ export default function Beranda() {
               if (!l) return null;
               return (
                 <Taut key={id} href={{ pathname: '/booking/kapster', params: { layanan: id } }} gaya={({ pressed }) => [st.favItem, pressed && { backgroundColor: W.kertasTua }]}>
-                    <Ikon nama="hati" ukuran={18} warna={W.marun} isi />
-                    <T kecil style={F.b}>{l.nama}</T>
-                    <T kecil lembut>{rupiah(l.harga)}</T>
-                  </Taut>
+                  <Ikon nama="hati" ukuran={18} warna={W.marun} isi />
+                  <T kecil style={F.b}>{l.nama}</T>
+                  <T kecil lembut>{rupiah(l.harga)}</T>
+                </Taut>
               );
             })}
           </View>
@@ -232,20 +235,72 @@ export default function Beranda() {
   );
 }
 
+/** Ubin antre: nomor milikmu, ajakan ambil nomor saat buka, atau hitung mundur buka saat tutup. */
+function UbinAntre({ ka, antre, sekarang, hIni }) {
+  let label = 'Datang langsung';
+  let besar = 'Antre';
+  let ket = 'Lihat keadaan kursi';
+  let aksi = 'Buka antre';
+  let href = '/antre';
+  let warna = W.tinta;
+  if (antre) {
+    label = 'Antre kamu';
+    besar = antre.nomor;
+    warna = W.marun;
+    ket = antre.status === 'dipanggil' ? 'Giliranmu sekarang' : 'Pantau giliranmu';
+    aksi = 'Lihat nomor';
+  } else if (ka && ka.terima) {
+    besar = ka.buka ? 'Buka' : 'Segera';
+    warna = W.hijau;
+    ket = ka.menunggu ? `${ka.menunggu} antre · ±${ka.perkiraan} mnt` : ka.perkiraan ? `Antre dibuka · ±${ka.perkiraan} mnt` : 'Ada kursi kosong sekarang';
+    aksi = 'Ambil nomor';
+  } else if (ka) {
+    besar = 'Tutup';
+    warna = W.marun;
+    const b = ka.berikut;
+    ket = b ? `Buka ${b.h === hIni ? '' : b.h === hIni + 1 ? 'besok ' : HARI[hariPekan(b.h)] + ' '}${jam(b.menit)} · ${hitungMundur(pada(b.h, b.menit), sekarang)}` : 'Lihat jam buka';
+    aksi = 'Jam buka';
+    href = '/outlet';
+  }
+  return (
+    <Taut href={href} gaya={({ pressed }) => [st.ubin, st.ubinMint, pressed && { opacity: 0.85 }]}>
+      <View style={st.ubinPita}>
+        <Pola jenis="belang" varian="pangkas" lebarBelang={5} />
+      </View>
+      <Label>{label}</Label>
+      <Text style={[st.ubinBesar, { color: warna }]} numberOfLines={1}>
+        {ka || antre ? besar : 'Antre'}
+      </Text>
+      <T kecil style={F.sb} numberOfLines={2}>
+        {ka || antre ? ket : 'Lihat keadaan kursi'}
+      </T>
+      <Text style={st.aksiUbin}>{ka || antre ? aksi : 'Buka antre'}</Text>
+    </Taut>
+  );
+}
+
 const st = StyleSheet.create({
   sapa: { gap: 2, marginTop: -2 },
   kepalaBagian: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
-  kosong: { gap: 4, overflow: 'hidden' },
+  jadwal: { gap: 4 },
+  jadwalBawah: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 6, paddingHorizontal: 4 },
+  kosong: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   duo: { flexDirection: 'row', gap: 12 },
-  ubin: { flex: 1, borderRadius: R.besar, padding: 14, paddingTop: 30, gap: 2, overflow: 'hidden', borderWidth: 1, minHeight: 132 },
-  ubinMint: { backgroundColor: W.mint, borderColor: W.mintTua },
+  ubin: { flex: 1, borderRadius: R.besar, padding: 14, paddingTop: 26, gap: 2, overflow: 'hidden', borderWidth: 1, minHeight: 150 },
+  ubinMint: { backgroundColor: W.putih, borderColor: W.garis },
   ubinKrem: { backgroundColor: W.kuninganMuda, borderColor: '#E3CC9C', paddingTop: 14 },
-  ubinPita: { position: 'absolute', left: 0, right: 0, top: 0, height: 16 },
+  ubinPita: { position: 'absolute', left: 0, right: 0, top: 0, height: 12 },
   ubinBesar: { ...F.display, fontSize: 30, lineHeight: 36, color: W.tinta, marginTop: 4 },
   ubinPer: { ...F.display, fontSize: 18, color: W.tintaLembut },
+  aksiUbin: { ...F.b, fontSize: 13, lineHeight: 18, color: W.marun, textDecorationLine: 'underline', marginTop: 'auto', paddingTop: 6 },
   titikCap: { flexDirection: 'row', gap: 5, marginTop: 8 },
   titik: { width: 14, height: 14, borderRadius: 7, borderWidth: 1.5, borderColor: W.marun },
   titikIsi: { backgroundColor: W.marun },
+  panduan: { flexDirection: 'row', gap: 12, padding: 14, paddingLeft: 0, borderRadius: R.besar, backgroundColor: W.putih, borderWidth: 1, borderColor: W.garis, overflow: 'hidden' },
+  panduanPita: { width: 10, alignSelf: 'stretch', overflow: 'hidden', borderTopLeftRadius: R.besar, borderBottomLeftRadius: R.besar },
+  panduanItem: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 10, borderRadius: 12, backgroundColor: W.kertas },
+  panduanNo: { width: 28, height: 28, borderRadius: 14, backgroundColor: W.marun, alignItems: 'center', justifyContent: 'center' },
+  panduanNoTeks: { ...F.display, fontSize: 15, lineHeight: 18, color: W.krem },
   cepat: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   cepatItem: { width: '48%', flexGrow: 1 },
   cepatTombol: { minHeight: 62, borderRadius: 14, borderWidth: 1.5, borderColor: W.hijau, paddingHorizontal: 12, paddingVertical: 8, justifyContent: 'center' },

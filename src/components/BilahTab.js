@@ -61,10 +61,10 @@ const st = StyleSheet.create({
     paddingTop: 6,
     paddingHorizontal: 4,
   },
-  item: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 2, minHeight: 52, paddingBottom: 2 },
+  item: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 2, minHeight: 54, paddingBottom: 2 },
   pil: { width: 52, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   pilAktif: { backgroundColor: W.marunMuda },
-  label: { ...F.sb, fontSize: 11, lineHeight: 14, color: W.tintaLembut },
+  label: { ...F.sb, fontSize: 12.5, lineHeight: 16, color: W.tintaLembut },
   labelAktif: { ...F.b, color: W.marun },
   tengah: {
     width: 54,

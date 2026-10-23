@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable, Linking } from 'react-native';
 import { W, F, R } from '../lib/tema';
-import { useToko, capTerkumpul, palingSering, simpanNama, aturPengingatBawaan, alihFavorit, aturUlang } from '../lib/store';
-import { layananById, PENGINGAT, SITUS } from '../lib/data';
+import { useToko, capTerkumpul, palingSering, simpanNama, aturPengingatBawaan, alihFavorit, aturUlang, tutupPanduan } from '../lib/store';
+import { layananById, PENGINGAT, SITUS, CAP_PENUH } from '../lib/data';
 import { rupiah, durasi } from '../lib/waktu';
 import { meta } from '../lib/seo';
 import Layar from '../components/Layar';
@@ -28,6 +28,12 @@ export default function Profil() {
   useEffect(() => setNama(profil.nama), [profil.nama]);
 
   const cap = capTerkumpul({ bookings, hadiahDipakai });
+  const panduanTutup = useToko((s) => s.panduanTutup);
+  const tanggalCap = bookings
+    .filter((b) => b.status === 'selesai')
+    .map((b) => b.mulai)
+    .sort((a, b) => a - b)
+    .slice(hadiahDipakai * CAP_PENUH, hadiahDipakai * CAP_PENUH + CAP_PENUH);
   const sering = palingSering(bookings).slice(0, 3);
 
   const konfirmasiUlang = () =>
@@ -53,7 +59,7 @@ export default function Profil() {
     <Layar besar tab judul="Profil" sub="Data tersimpan di perangkat ini">
       <Kartu style={st.identitas}>
         <View style={st.monogram} aria-hidden>
-          <Pola jenis="tegel" varian="marun" ukuran={28} />
+          <Pola jenis="kulit" varian="marun" ukuran={24} />
           <Text style={st.monogramHuruf}>{siap ? profil.nama.slice(0, 1).toUpperCase() : ''}</Text>
         </View>
         {ubahNama ? (
@@ -95,14 +101,14 @@ export default function Profil() {
         )}
       </Kartu>
 
-      <Kartu style={{ gap: 12, backgroundColor: W.krem }}>
+      <Kartu style={{ gap: 12, backgroundColor: W.krem, borderColor: W.garisKarcis }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Ikon nama="hadiah" warna={W.marun} />
           <Judul level={2} style={{ flex: 1 }}>
             Kartu cap kunjungan
           </Judul>
         </View>
-        {siap ? <KartuCap jumlah={cap} /> : <Kerangka tinggi={70} />}
+        {siap ? <KartuCap jumlah={cap} tanggalCap={tanggalCap} /> : <Kerangka tinggi={90} />}
         <T kecil lembut>Cap bertambah otomatis setelah jadwalmu lewat (simulasi kunjungan selesai).</T>
       </Kartu>
 
@@ -182,6 +188,7 @@ export default function Profil() {
         </T>
         <T kecil>Dibuat oleh PintuWeb dengan React Native + Expo, jadi satu kode yang sama bisa dirilis ke Android, iOS, dan web.</T>
         <Tombol varian="hijau" label="Pesan aplikasi seperti ini" ikonKanan="keluar" href={SITUS.kontak} aksesLabel="Pesan aplikasi seperti ini di PintuWeb (membuka situs PintuWeb)" />
+        {siap && panduanTutup ? <Tombol varian="lembut" ikon="info" label="Tampilkan lagi panduan di Beranda" onPress={() => tutupPanduan(false)} /> : null}
         <Tombol varian="lembut" ikon="ulang" label="Atur ulang data demo" onPress={konfirmasiUlang} />
       </Kartu>
     </Layar>

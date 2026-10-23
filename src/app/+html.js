@@ -1,6 +1,5 @@
 import { useServerDocumentContext } from 'expo-router/html';
 import QRCode from 'qrcode';
-import { tegelSvg, dataUri } from '../components/pola-data';
 import { SITUS } from '../lib/data';
 
 // Hanya berjalan di Node saat build (static rendering). Tidak ikut bundel klien.
@@ -23,7 +22,6 @@ function qrPath(teks) {
 }
 
 const QR = qrPath(SITUS.url + '/');
-const TEGEL_LATAR = dataUri(tegelSvg('krem', 120));
 
 const JSONLD = {
   '@context': 'https://schema.org',
@@ -47,8 +45,8 @@ const CSS = `
 @font-face{font-family:Gloock;src:url(/fonts/gloock-latin.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Jakarta Fallback";src:local("Arial"),local("Helvetica"),local("Roboto");size-adjust:104%;ascent-override:99%;descent-override:21%;line-gap-override:0%}
 @font-face{font-family:"Gloock Fallback";src:local("Georgia"),local("Times New Roman"),local("Noto Serif");size-adjust:100%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:#F4EEE3;height:100%}
-body{margin:0;min-height:100%;background:#F4EEE3;color:#241A1B;font-family:Jakarta,"Jakarta Fallback",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:#E3EFE8;height:100%}
+body{margin:0;min-height:100%;background:#E3EFE8;color:#241A1B;font-family:Jakarta,"Jakarta Fallback",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 #root{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;overflow:hidden;position:relative}
 .samping,.status-palsu,.tombol-palsu{display:none}
 :focus-visible{outline:3px solid #1E5442!important;outline-offset:2px}
@@ -57,12 +55,13 @@ body>aside a:focus-visible{outline-color:#FFF6E6!important}
 input,textarea{font:inherit}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media (min-width:768px){
-  body{background:#ECE3D3 ${TEGEL_LATAR};background-size:120px 120px}
+  body{background:#D3E6DB repeating-linear-gradient(135deg,rgba(250,253,251,.55) 0 3px,transparent 3px 26px)}
+  .panggung{background:radial-gradient(ellipse at 50% 38%,rgba(250,253,251,.75),rgba(250,253,251,0) 62%)}
   .panggung{min-height:100vh;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:44px;padding:28px 28px 36px}
   .ponsel{grid-column:2;grid-row:1;position:relative;width:390px;padding:11px;border-radius:58px;background:linear-gradient(145deg,#3B2A2C,#1C1415);box-shadow:0 0 0 1px #0d0909,0 2px 0 1px #4a3638 inset,0 40px 80px -24px rgba(36,26,27,.55),0 18px 36px -18px rgba(36,26,27,.45)}
   .tombol-palsu{display:block;position:absolute;width:4px;border-radius:3px;background:#2b1f20}
-  .layar{position:relative;display:flex;flex-direction:column;height:min(844px,calc(100vh - 86px));min-height:620px;border-radius:47px;overflow:hidden;background:#F4EEE3;isolation:isolate}
-  .status-palsu{display:flex;flex:none;height:42px;padding:0 30px 0 34px;align-items:center;justify-content:space-between;font:600 15px/1 Jakarta,"Jakarta Fallback",system-ui,sans-serif;color:#241A1B;background:#F4EEE3}
+  .layar{position:relative;display:flex;flex-direction:column;height:min(844px,calc(100vh - 86px));min-height:620px;border-radius:47px;overflow:hidden;background:#E3EFE8;isolation:isolate}
+  .status-palsu{display:flex;flex:none;height:42px;padding:0 30px 0 34px;align-items:center;justify-content:space-between;font:600 15px/1 Jakarta,"Jakarta Fallback",system-ui,sans-serif;color:#241A1B;background:#E3EFE8}
   .pulau{width:104px;height:30px;border-radius:20px;background:#120d0e}
   #root{flex:1;height:auto;min-height:0}
   .samping{display:block;font-size:15px;line-height:1.55}
@@ -80,12 +79,12 @@ input,textarea{font:inherit}
 .merek{margin:0;font:400 46px/1.02 Gloock,"Gloock Fallback",Georgia,serif;letter-spacing:-.01em;color:#5A1520}
 .lead{margin:12px 0 18px;color:#241A1B}
 .fitur{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.fitur li{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:12px 14px;border-radius:18px;background:rgba(255,252,246,.88);border:1px solid #DCCFBC}
+.fitur li{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding:12px 14px;border-radius:18px;background:rgba(250,253,251,.92);border:1px solid #C6DBCF}
 .fitur .no{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font:400 18px/1 Gloock,"Gloock Fallback",Georgia,serif;color:#FFF6E6;background:#7A1F2B}
 .fitur b{display:block;font-weight:700;color:#241A1B}
 .fitur span{display:block;font-size:14px;line-height:1.45;color:#5B4C48}
 .catatan{margin:14px 0 0;font-size:13px;color:#5B4C48}
-.qr-kartu{padding:18px;border-radius:24px;background:#FFFCF6;border:1px solid #DCCFBC;box-shadow:0 18px 40px -26px rgba(36,26,27,.5)}
+.qr-kartu{padding:18px;border-radius:24px;background:#FFF6E6;border:1px solid #E3D3B6;box-shadow:0 18px 40px -26px rgba(36,26,27,.5)}
 .qr-kartu svg{display:block;width:100%;max-width:200px;height:auto;margin:0 auto 12px;border-radius:12px}
 .qr-kartu p{margin:0;font-size:14px;line-height:1.45;color:#5B4C48}
 .qr-kartu b{color:#241A1B}
@@ -98,8 +97,8 @@ input,textarea{font:inherit}
 const FITUR = [
   ['Jam kosong yang jujur', 'Dihitung dari jam buka, istirahat, durasi layanan, dan kursi yang sudah terisi. Semua WIB.'],
   ['Pilih kapster atau siapa saja', 'Lihat keahlian, hari libur, dan jam paling cepat tiap kapster.'],
-  ['Karcis, ubah, batal, ingatkan', 'Kode booking, geser jadwal sendiri, dan pengingat sebagai notifikasi simulasi.'],
-  ['Riwayat & kartu cap', 'Pesan lagi sekali ketuk, layanan favorit, dan cap tiap kunjungan.'],
+  ['Karcis hari-H', 'QR & kode untuk kasir, “Saya sudah sampai”, kalender, ubah atau batal, pengingat.'],
+  ['Antre datang langsung', 'Nomor antre, orang sebelum kamu, dan perkiraan dipanggil; juga booking untuk anak.'],
 ];
 
 export default function Root({ children, pathname }) {
@@ -111,7 +110,7 @@ export default function Root({ children, pathname }) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#F4EEE3" />
+        <meta name="theme-color" content="#E3EFE8" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Kursi Putar" />
@@ -172,7 +171,7 @@ export default function Root({ children, pathname }) {
           <aside className="samping kanan" aria-label="Buka di HP dan pesan aplikasi">
             <div className="qr-kartu">
               <svg viewBox={`0 0 ${QR.ukuran} ${QR.ukuran}`} role="img" aria-label={`Kode QR menuju ${SITUS.url.replace('https://', '')}`} shapeRendering="crispEdges">
-                <rect width={QR.ukuran} height={QR.ukuran} fill="#FFFCF6" />
+                <rect width={QR.ukuran} height={QR.ukuran} fill="#FFFFFF" />
                 <path d={QR.d} fill="#241A1B" />
               </svg>
               <p>

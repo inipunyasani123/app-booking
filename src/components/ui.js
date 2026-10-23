@@ -54,14 +54,17 @@ const VARIAN = {
   teks: { bg: 'transparent', fg: W.marun, bgTekan: W.marunMuda, garis: 'transparent' },
 };
 
+// Tombol nonaktif digambar bergaris (bukan pudar) supaya teksnya tetap terbaca (kontras >= 4,5:1).
+const MATI = { bg: 'transparent', fg: W.marun, bgTekan: 'transparent', garis: W.marun };
+
 export function Tombol({ label, onPress, href, varian = 'utama', ikon, ikonKanan, kecil, disabled, aksesLabel, penuh, style, replace }) {
-  const v = VARIAN[varian];
+  const v = disabled ? MATI : VARIAN[varian];
   const isi = (tekan) => [
     s.tombol,
     kecil && s.tombolKecil,
     penuh && { alignSelf: 'stretch' },
     { backgroundColor: tekan ? v.bgTekan : v.bg, borderColor: v.garis },
-    disabled && s.mati,
+    disabled && { borderStyle: 'dashed' },
     style,
   ];
   const dalam = (
@@ -232,7 +235,7 @@ export const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: W.kertas,
   },
-  badgeTeks: { ...F.b, fontSize: 11, lineHeight: 14, color: W.krem },
+  badgeTeks: { ...F.b, fontSize: 12, lineHeight: 14, color: W.krem },
   kartu: { backgroundColor: W.putih, borderRadius: R.besar, borderWidth: 1, borderColor: W.garis, padding: 16 },
   kartuTekan: { backgroundColor: W.kertasTua },
   saklarBaris: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 4, borderRadius: 12, minHeight: SENTUH },
@@ -245,5 +248,5 @@ export const s = StyleSheet.create({
   segmenAktif: { backgroundColor: W.hijau },
   segmenTeks: { ...F.b, fontSize: 14, lineHeight: 18, color: W.tinta },
   lencana: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  lencanaTeks: { ...F.b, fontSize: 12, lineHeight: 16 },
+  lencanaTeks: { ...F.b, fontSize: 12.5, lineHeight: 16 },
 });

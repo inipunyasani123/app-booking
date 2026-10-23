@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { W, F, R } from '../lib/tema';
-import { LAYANAN, KATEGORI, kapsterUntuk } from '../lib/data';
+import { LAYANAN, KATEGORI, kapsterUntuk, GAYA, layananById } from '../lib/data';
 import { durasi, rupiah } from '../lib/waktu';
 import { useToko, alihFavorit } from '../lib/store';
 import { meta } from '../lib/seo';
@@ -89,6 +89,30 @@ export default function Layanan() {
           );
         })}
       </View>
+      {kat === 'pangkas' ? (
+        <View style={{ gap: 10 }}>
+          <Judul level={2}>Belum tahu mau potong apa?</Judul>
+          <T kecil lembut>Pilih gaya; layanan yang pas dan catatan untuk kapster langsung terisi. Ilustrasi buatan sendiri, bukan foto pelanggan.</T>
+          <View role="list" style={st.gayaGrid}>
+            {GAYA.map((g) => (
+              <View key={g.id} role="listitem" style={st.gayaSel}>
+                <Taut href={{ pathname: '/booking/kapster', params: { layanan: g.layanan, gaya: g.id, ...(g.layanan === 'pangkas-anak' ? { untuk: 'anak' } : {}) } }} gaya={({ pressed }) => [st.gaya, pressed && { backgroundColor: W.kertasTua }]}>
+                  <Gambar nama={`gaya-${g.id}.webp`} lebar={76} tinggi={76} bulat={14} />
+                  <T style={[F.b, { textAlign: 'center' }]} numberOfLines={1}>
+                    {g.nama}
+                  </T>
+                  <T kecil lembut style={{ textAlign: 'center' }}>
+                    {g.ket}
+                  </T>
+                  <T kecil style={[F.sb, { color: W.hijau, textAlign: 'center' }]} numberOfLines={1}>
+                    {layananById[g.layanan].nama.split(' + ')[0]}
+                  </T>
+                </Taut>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
       {kat === 'tambahan' ? (
         <T kecil lembut>
           Tambahan dipilih di langkah pertama booking dan menambah durasi layananmu, jadi jam kosong yang tampil ikut menyesuaikan.
@@ -112,4 +136,7 @@ const st = StyleSheet.create({
   hati: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: W.garis },
   pesan: { minHeight: 44, paddingHorizontal: 14, borderRadius: 12, backgroundColor: W.marun, alignItems: 'center', justifyContent: 'center' },
   pesanTeks: { ...F.b, fontSize: 14, lineHeight: 18, color: W.krem },
+  gayaGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  gayaSel: { width: '48%', flexGrow: 1 },
+  gaya: { alignItems: 'center', gap: 4, padding: 12, borderRadius: 16, backgroundColor: W.putih, borderWidth: 1, borderColor: W.garis, minHeight: 190 },
 });

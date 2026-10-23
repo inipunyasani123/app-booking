@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F4EEE3",
+    "backgroundColor": "#E3EFE8",
     "primaryColor": "#7A1F2B",
     "description": "Demo aplikasi booking pangkas rambut & salon fiktif buatan PintuWeb.",
     "ios": {
@@ -30,7 +30,7 @@
       "shortName": "Kursi Putar",
       "lang": "id",
       "themeColor": "#7A1F2B",
-      "backgroundColor": "#F4EEE3"
+      "backgroundColor": "#E3EFE8"
     },
     "plugins": [
       [
@@ -46,7 +46,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160,
           "resizeMode": "contain",
-          "backgroundColor": "#F4EEE3"
+          "backgroundColor": "#E3EFE8"
         }
       ],
       "expo-font"

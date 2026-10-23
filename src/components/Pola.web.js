@@ -1,13 +1,13 @@
-import { tegelSvg, dataUri, BELANG } from './pola-data';
+import { kulitSvg, dataUri, BELANG } from './pola-data';
 
-const tegelCache = {};
+const cache = {};
 
-/** Latar berpola dekoratif. Di web cukup <div> dengan background-image CSS. */
-export default function Pola({ jenis = 'tegel', varian = 'mint', ukuran = 64, style, lebarBelang = 6 }) {
+/** Latar berpola dekoratif (jok kulit / belang tiang pangkas). Di web cukup <div> dengan background CSS. */
+export default function Pola({ jenis = 'kulit', varian = 'marun', ukuran = 40, style, lebarBelang = 6 }) {
   let bg;
-  if (jenis === 'tegel') {
+  if (jenis === 'kulit') {
     const k = varian + ukuran;
-    bg = tegelCache[k] || (tegelCache[k] = { backgroundImage: dataUri(tegelSvg(varian, ukuran)), backgroundSize: `${ukuran}px ${ukuran}px` });
+    bg = cache[k] || (cache[k] = { backgroundImage: dataUri(kulitSvg(varian, ukuran)), backgroundSize: `${ukuran}px ${ukuran}px` });
   } else {
     const w = BELANG[varian] || BELANG.pangkas;
     const l = lebarBelang;

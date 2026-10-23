@@ -1,4 +1,4 @@
-import { JAM_BUKA, KAPSTER, kapsterById, layananById, JEDA_PESAN_MENIT } from './data';
+import { JAM_BUKA, KAPSTER, kapsterById, layananById, JEDA_PESAN_MENIT, ANTRE_BUKA_LEBIH_AWAL } from './data';
 import { hariPekan, hariKe, menitKe, pada } from './waktu';
 
 export const LANGKAH = 15;
@@ -147,3 +147,57 @@ export function pilihOtomatis(ids, h) {
 }
 
 export const semuaKapster = KAPSTER.map((k) => k.id);
+
+// ---------- antre datang langsung ----------
+const RATA_MENIT_ANTRE = 32;
+const bulat5 = (n) => Math.ceil(n / 5) * 5;
+
+/** Pembukaan outlet berikutnya (termasuk sesudah istirahat hari ini): { h, menit } atau null. */
+export function bukaBerikut(sekarang) {
+  const h0 = hariKe(sekarang);
+  const m = menitKe(sekarang);
+  for (let d = 0; d < 8; d++) {
+    const o = jamOutlet(h0 + d);
+    if (!o) continue;
+    if (d === 0) {
+      if (m < o.buka) return { h: h0, menit: o.buka };
+      if (m >= o.istirahat[0] && m < o.istirahat[1]) return { h: h0, menit: o.istirahat[1] };
+      if (m < o.tutup) return null; // sedang buka
+      continue;
+    }
+    return { h: h0 + d, menit: o.buka };
+  }
+  return null;
+}
+
+/**
+ * Keadaan antre saat ini (simulasi): kursi yang dipakai/kosong menurut jadwal kapster & booking,
+ * jumlah orang menunggu (contoh, berubah per 30 menit), perkiraan tunggu untuk nomor baru.
+ */
+export function kondisiAntre(sekarang, bookings = []) {
+  const h = hariKe(sekarang);
+  const m = menitKe(sekarang);
+  const o = jamOutlet(h);
+  const berikut = bukaBerikut(sekarang);
+  const kursi = [];
+  if (o && !berikut) {
+    for (const k of KAPSTER) {
+      const j = jadwalKapster(k, h);
+      if (!j || m < j.buka || m >= j.tutup) continue;
+      const blok = [...sibukContoh(k, h), ...sibukPengguna(bookings, k.id, h)].find(([a, b]) => m >= a && m < b);
+      kursi.push({ kapster: k.id, status: blok ? 'dipakai' : 'kosong', sampai: blok ? blok[1] : null });
+    }
+  }
+  const buka = kursi.length > 0 && m < o.tutup - 30;
+  // Penerimaan antre dibuka 15 menit sebelum buka (pagi atau sesudah istirahat).
+  const awal = berikut && berikut.h === h && berikut.menit - m <= ANTRE_BUKA_LEBIH_AWAL;
+  const r = mulberry32(h * 97 + Math.floor(m / 30) + 7);
+  const sore = m >= 16 * 60 ? 1 : 0;
+  const kosong = kursi.filter((x) => x.status === 'kosong').length;
+  // Orang yang datang langsung langsung mengisi kursi kosong; yang menunggu hanya sisanya.
+  const datang = buka || awal ? Math.floor(r() * (3 + sore)) + (awal ? 1 : 0) : 0;
+  const menunggu = awal ? datang : Math.max(0, datang - kosong);
+  const posisi = menunggu + 1;
+  const perkiraan = buka ? (posisi <= kosong ? 0 : bulat5(((posisi - kosong) * RATA_MENIT_ANTRE) / Math.max(1, kursi.length))) : awal ? berikut.menit - m + bulat5((menunggu * RATA_MENIT_ANTRE) / 4) : null;
+  return { terima: buka || !!awal, buka, awal: !!awal, kursi, kosong, menunggu, perkiraan, berikut, tutup: o ? o.tutup : null };
+}

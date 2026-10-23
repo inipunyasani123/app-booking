@@ -6,12 +6,13 @@ import { kapsterUntuk, kapsterById, RENTANG_HARI } from '../../lib/data';
 import { durasi, jam, jamDari, menitKe, sebutanHari, hariKe, tanggal, pada, awalHari } from '../../lib/waktu';
 import { useToko, hitungPesanan, tampilKode, bisaUbah } from '../../lib/store';
 import { slotHari, pilihOtomatis } from '../../lib/slot';
-import { usePesanan } from '../../lib/kait';
+import { usePesanan, teruskan } from '../../lib/kait';
 import { meta } from '../../lib/seo';
 import Layar from '../../components/Layar';
-import { T, Judul, Tombol, Kerangka } from '../../components/ui';
+import { T, Judul, Tombol, Kerangka, Saklar } from '../../components/ui';
 import { Langkah, StripHari, GridSlot, Avatar } from '../../components/booking';
 import Pola from '../../components/Pola';
+import Ikon from '../../components/Ikon';
 
 export function generateMetadata() {
   return meta('/booking/waktu');
@@ -21,7 +22,7 @@ export default function PilihWaktu() {
   const { siap, q, ...pesan } = usePesanan();
   const sekarang = useToko((s) => s.sekarang);
   const bookings = useToko((s) => s.bookings);
-  const kodeUbah = q.ubah ? String(q.ubah) : null;
+  const kodeUbah = siap && q.ubah ? String(q.ubah) : null;
   const lama = siap && kodeUbah ? bookings.find((b) => b.kode === kodeUbah) : null;
 
   // Saat mengubah jadwal, layanan & tambahan diambil dari booking lama.
@@ -32,12 +33,16 @@ export default function PilihWaktu() {
   const [kapster, setKapster] = useState('semua');
   const [hari, setHari] = useState(null);
   const [menit, setMenit] = useState(null);
+  const [sembunyi, setSembunyi] = useState(null);
+  const setelah = q.setelah ? Number(q.setelah) : 0;
+  const sambungHari = setelah ? hariKe(setelah) : null;
+  const sambungMenit = setelah ? menitKe(setelah) : null;
   useEffect(() => {
     if (lama) setKapster(lama.kapster);
     else if (q.kapster) setKapster(String(q.kapster));
   }, [lama?.kode, q.kapster]);
 
-  const bisa = layanan ? kapsterUntuk(layanan) : [];
+  const bisa = layanan ? kapsterUntuk(layanan, pesan.privat) : [];
   const pilihKapster = bisa.some((k) => k.id === kapster) ? kapster : 'semua';
   const ids = pilihKapster === 'semua' ? bisa.map((k) => k.id) : [pilihKapster];
   const hIni = hariKe(sekarang);
@@ -52,12 +57,13 @@ export default function PilihWaktu() {
     });
   }, [siap, layanan, p.durasi, ids.join(), bookings, kodeUbah, hIni, menitIni]);
 
-  // Pilih otomatis hari pertama yang masih punya jam kosong.
+  // Pilih otomatis hari pertama yang masih punya jam kosong (atau hari karcis yang mau disambung).
   useEffect(() => {
     if (!daftarHari.length) return;
     const masih = daftarHari.find((d) => d.h === hari && d.kosong > 0);
     if (!masih) {
-      const pertama = daftarHari.find((d) => d.kosong > 0);
+      const sbg = sambungHari != null && daftarHari.find((d) => d.h === sambungHari && d.kosong > 0);
+      const pertama = sbg || daftarHari.find((d) => d.kosong > 0);
       setHari(pertama ? pertama.h : null);
       setMenit(null);
     }
@@ -68,9 +74,15 @@ export default function PilihWaktu() {
     [siap, layanan, hari, p.durasi, ids.join(), bookings, kodeUbah, menitIni],
   );
   const terpilih = data && menit != null ? data.slot.find((s) => s.menit === menit && s.status === 'kosong') : null;
+  const menitSambung =
+    data && hari === sambungHari ? data.slot.find((x) => x.status === 'kosong' && x.menit >= sambungMenit && x.menit - sambungMenit <= 60)?.menit ?? null : null;
   useEffect(() => {
     if (menit != null && data && !terpilih) setMenit(null);
+    // Jam kosong terdekat sesudah karcis sebelumnya (maks. 60 menit) langsung dipilih.
+    if (data && menit == null && menitSambung != null) setMenit(menitSambung);
   }, [data]);
+  const rasioTerisi = data && data.slot.length ? data.slot.filter((x) => x.status !== 'kosong').length / data.slot.length : 0;
+  const sembunyikan = sembunyi ?? rasioTerisi > 0.5;
 
   if (siap && !layanan) {
     return (
@@ -100,7 +112,7 @@ export default function PilihWaktu() {
         layanan,
         kapster: kap,
         mulai: String(pada(hari, menit)),
-        ...(tambah.length ? { tambah: tambah.join(',') } : {}),
+        ...teruskan(q, { tambah: tambah.join(',') }),
         ...(otomatis ? { otomatis: '1' } : {}),
         ...(kodeUbah ? { ubah: kodeUbah } : {}),
       },
@@ -193,14 +205,32 @@ export default function PilihWaktu() {
           siap && !daftarHari.some((d) => d.kosong) ? (
             <T>Dua pekan ke depan sudah penuh untuk pilihan ini. Coba kapster lain atau "Siapa saja".</T>
           ) : (
-            <Kerangka tinggi={260} />
+            <KerangkaGrid />
           )
         ) : (
           <>
             {data.lewat && hari === hIni ? (
               <T kecil lembut>Jam sebelum {jam(Math.min(1439, Math.ceil((menitKe(sekarang) + 30) / 15) * 15))} tidak ditampilkan: paling cepat 30 menit dari sekarang.</T>
             ) : null}
-            <GridSlot data={data} pilih={menit} ubah={setMenit} />
+            <Saklar
+              label="Sembunyikan jam yang terisi"
+              ket={`${data.slot.filter((x) => x.status !== 'kosong').length} dari ${data.slot.length} jam sudah terisi hari ini`}
+              nilai={sembunyikan}
+              ubah={setSembunyi}
+            />
+            {menitSambung != null ? (
+              <View style={st.sambung}>
+                <Ikon nama="karcis" ukuran={18} warna={W.hijau} />
+                <T kecil style={[F.sb, { flex: 1 }]}>
+                  {menitSambung === sambungMenit
+                    ? `Jam ${jam(menitSambung)} menyambung karcis sebelumnya, jadi bisa datang bersama.`
+                    : `Jam ${jam(menitSambung)} paling dekat setelah karcis sebelumnya selesai ${jam(sambungMenit)} (tunggu ${menitSambung - sambungMenit} menit).`}
+                </T>
+              </View>
+            ) : hari === sambungHari ? (
+              <T kecil lembut>Tidak ada jam kosong dalam 1 jam setelah karcis sebelumnya; pilih jam lain atau kapster lain.</T>
+            ) : null}
+            <GridSlot data={data} pilih={menit} ubah={setMenit} durasiMenit={p.durasi} sembunyikan={sembunyikan} sambung={menitSambung} />
             <T kecil lembut>Jam yang tampil sudah memperhitungkan durasi {durasi(p.durasi)}, jam istirahat, dan jam tutup. Semua waktu dalam WIB.</T>
           </>
         )}
@@ -209,8 +239,24 @@ export default function PilihWaktu() {
   );
 }
 
+function KerangkaGrid() {
+  return (
+    <View aria-hidden style={{ gap: 8 }}>
+      <Kerangka tinggi={22} style={{ width: 120 }} />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <View key={i} style={{ width: '23%', flexGrow: 1, height: 48, borderRadius: 12, overflow: 'hidden', backgroundColor: W.kertasTua }}>
+            <Pola jenis="belang" varian="lembut" lebarBelang={4} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 const st = StyleSheet.create({
   kecil: { fontSize: 18, lineHeight: 24 },
+  sambung: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 12, backgroundColor: W.mint },
   chipBaris: { gap: 8, paddingRight: 16 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, paddingLeft: 6, paddingRight: 14, borderRadius: 999, borderWidth: 1.5, borderColor: W.garis, backgroundColor: W.putih },
   chipAktif: { backgroundColor: W.hijau, borderColor: W.hijau },

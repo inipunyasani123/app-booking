@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#C2DFCD"/><circle cx="150" cy="40" r="60" fill="#fff" opacity=".35"/><defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1D18" stop-opacity="0.95"/><stop offset="0.7" stop-color="#2A1D18" stop-opacity="0.9"/><stop offset="0.85" stop-color="#2A1D18" stop-opacity="0"/></linearGradient></defs><g transform="translate(100 112) scale(0.84) translate(-100 -112)">
+  <defs><clipPath id="kepala"><ellipse cx="102" cy="92" rx="44" ry="54"/></clipPath></defs>
+  <path d="M36 204c8-30 34-46 64-46s56 16 64 46z" fill="#7A1F2B"/>
+  <path d="M60 176c10-8 24-12 40-12s30 4 40 12" stroke="#FFF6E6" stroke-width="4" fill="none" opacity=".7"/>
+  <rect x="84" y="124" width="34" height="40" rx="14" fill="#B07A55"/>
+  <ellipse cx="102" cy="92" rx="44" ry="54" fill="#C8916A"/><path d="M30 34H124C118 66 114 100 121 146H30Z" fill="url(#f)" clip-path="url(#kepala)"/>
+    <path d="M58 92C56 54 78 40 102 40c26 0 44 16 44 40-10 2-20 2-28-2-10 6-26 8-40 6-8 0-14 4-20 8z" fill="#3B2418"/>
+    <path d="M118 76c8 2 16 2 26 0" stroke="#5C3A28" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="90" cy="100" rx="8" ry="12" fill="#B07A55"/><path d="M88 94c3 2 4 6 2 10" stroke="#9A6847" stroke-width="2" fill="none"/></g></svg>

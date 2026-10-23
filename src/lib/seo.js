@@ -18,6 +18,7 @@ export const HALAMAN = {
   '/booking/konfirmasi': { judul: 'Konfirmasi Booking · Kursi Putar', deskripsi: 'Langkah terakhir booking: cek layanan, kapster, dan jam, isi nama di karcis, lalu atur pengingat sebelum jadwal.', noindex: true },
   '/booking/waktu': { judul: 'Pilih Tanggal & Jam Kosong · Kursi Putar', deskripsi: 'Langkah ketiga booking: jam kosong dihitung dari jam buka, istirahat, durasi layanan, dan kursi yang sudah terisi. Semua dalam WIB.', noindex: true },
   '/kapster': { judul: 'Kapster & Penata Rambut · Kursi Putar', deskripsi: 'Kenali lima kapster dan penata rambut Kursi Putar: keahlian, hari libur, jam tugas, serta layanan yang mereka tangani.' },
+  '/antre': { judul: 'Antre Datang Langsung · Kursi Putar', deskripsi: 'Ambil nomor antre tanpa janji: lihat kursi yang sedang dipakai, jumlah orang menunggu, dan perkiraan waktu dipanggil (WIB).' },
   '/404': { judul: 'Halaman Tidak Ditemukan · Kursi Putar', deskripsi: 'Halaman ini tidak ada di aplikasi demo Kursi Putar. Kembali ke beranda untuk booking pangkas atau salon.', noindex: true },
 };
 

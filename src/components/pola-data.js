@@ -1,33 +1,31 @@
-// Motif khas: ubin tegel kunci (lantai pangkas rambut lama) dan belang tiang pangkas.
-export const VARIAN_TEGEL = {
-  mint: { bg: '#D3E8DC', c1: '#1E5442', c2: '#7A1F2B', c3: '#B8853A' },
-  krem: { bg: '#EFE6D7', c1: '#E2D5C1', c2: '#DDCDB6', c3: '#E7DAC6' },
-  marun: { bg: '#7A1F2B', c1: '#5A1520', c2: '#93404A', c3: '#B8853A' },
-  hijau: { bg: '#1E5442', c1: '#143A2E', c2: '#2E6A56', c3: '#B8853A' },
+// Motif khas Kursi Putar: jok kulit berkancing (tufted, seperti kursi pangkas lama)
+// dan belang tiang pangkas. Tegel sengaja tidak dipakai (motif itu milik demo lain).
+export const VARIAN_KULIT = {
+  marun: { dasar: '#7A1F2B', gembung: '#8A2A36', jahit: '#5A1520', kancing: '#3E0E15', kilau: '#A04450' },
+  hijau: { dasar: '#1E5442', gembung: '#266150', jahit: '#143A2E', kancing: '#0E2A21', kilau: '#3A7A64' },
 };
 
-export function tegelSvg(varian = 'mint', ukuran = 64) {
-  const { bg, c1, c2, c3 } = VARIAN_TEGEL[varian] || VARIAN_TEGEL.mint;
-  const sudut = [[0, 0], [64, 0], [0, 64], [64, 64]];
-  const tepi = [[32, 0], [64, 32], [32, 64], [0, 32]];
-  const kelopak = 'M32 12c5.5 6 5.5 12 0 20c-5.5-8-5.5-14 0-20z';
-  const daun = 'M32 32c6-1 9.5-4.5 10.5-10.5C36.5 22.5 33 26 32 32z';
+/** Ubin jok kulit: garis jahitan diagonal, gembungan di tengah tiap belah ketupat, kancing di simpul. */
+export function kulitSvg(varian = 'marun', ukuran = 40) {
+  const { dasar, gembung, jahit, kancing, kilau } = VARIAN_KULIT[varian] || VARIAN_KULIT.marun;
+  const tengah = [[20, 0], [0, 20], [40, 20], [20, 40]];
+  const simpul = [[0, 0], [40, 0], [0, 40], [40, 40], [20, 20]];
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${ukuran}" height="${ukuran}" viewBox="0 0 64 64">` +
-    `<rect width="64" height="64" fill="${bg}"/>` +
-    sudut.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="15" fill="${c1}"/><circle cx="${x}" cy="${y}" r="8.5" fill="${bg}"/><circle cx="${x}" cy="${y}" r="3.6" fill="${c3}"/>`).join('') +
-    tepi.map(([x, y]) => `<path d="M${x} ${y - 4.5}l4.5 4.5-4.5 4.5-4.5-4.5z" fill="${c2}"/>`).join('') +
-    [0, 90, 180, 270].map((r) => `<path d="${kelopak}" fill="${c2}" transform="rotate(${r} 32 32)"/>`).join('') +
-    [0, 90, 180, 270].map((r) => `<path d="${daun}" fill="${c3}" transform="rotate(${r} 32 32)"/>`).join('') +
-    `<circle cx="32" cy="32" r="3.4" fill="${bg}"/>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${ukuran}" height="${ukuran}" viewBox="0 0 40 40">` +
+    `<rect width="40" height="40" fill="${dasar}"/>` +
+    tengah.map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="11" ry="11" fill="${gembung}"/><ellipse cx="${x - 3}" cy="${y - 4}" rx="4.5" ry="3" fill="${kilau}" opacity=".55"/>`).join('') +
+    `<path d="M0 0L40 40M40 0L0 40" stroke="${jahit}" stroke-width="1.6"/>` +
+    `<path d="M0 0L40 40M40 0L0 40" stroke="${kilau}" stroke-width=".6" stroke-dasharray="1.6 2.4" transform="translate(.9 0)" opacity=".7"/>` +
+    simpul.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="${kancing}"/><circle cx="${x - 0.8}" cy="${y - 0.8}" r=".9" fill="${kilau}"/>`).join('') +
     `</svg>`
   );
 }
 
 export const BELANG = {
   pangkas: ['#7A1F2B', '#FFF6E6', '#1E5442', '#FFF6E6'],
-  lembut: ['#E4D6C3', '#F4EEE3', '#E4D6C3', '#F4EEE3'],
-  terisi: ['#E2D7C6', '#EAE0CF', '#E2D7C6', '#EAE0CF'],
+  lembut: ['#CDE3D6', '#E3EFE8', '#CDE3D6', '#E3EFE8'],
+  terisi: ['#C9DDD1', '#D6E7DD', '#C9DDD1', '#D6E7DD'],
+  porselen: ['#D3E6DB', '#DBEBE2', '#D3E6DB', '#DBEBE2'],
 };
 
 export function belangSvg(warna, lebar = 6) {

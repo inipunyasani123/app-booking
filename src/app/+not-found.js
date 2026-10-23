@@ -16,7 +16,7 @@ export default function TidakDitemukan() {
   return (
     <View role="main" style={[st.layar, { paddingTop: tepi.atas(24), paddingBottom: tepi.bawah(24) }]}>
       <View style={st.ubin}>
-        <Pola jenis="tegel" varian="mint" ukuran={60} />
+        <Pola jenis="kulit" varian="marun" ukuran={40} />
         <View style={st.kursi}>
           <Ikon nama="kursi" ukuran={56} warna={W.krem} tebal={1.6} />
         </View>
@@ -39,7 +39,7 @@ export default function TidakDitemukan() {
 const st = StyleSheet.create({
   layar: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 10, backgroundColor: W.kertas },
   ubin: { width: 180, height: 180, borderRadius: 40, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  kursi: { width: 104, height: 104, borderRadius: 52, backgroundColor: W.marun, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: W.krem },
+  kursi: { width: 104, height: 104, borderRadius: 52, backgroundColor: W.hijau, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: W.krem },
   kode: { ...F.b, fontSize: 14, lineHeight: 18, letterSpacing: 3, color: W.marun },
   judul: { ...F.display, fontSize: 32, lineHeight: 38, color: W.tinta, textAlign: 'center' },
 });

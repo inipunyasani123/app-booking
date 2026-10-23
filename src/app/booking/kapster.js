@@ -10,7 +10,7 @@ import { meta } from '../../lib/seo';
 import Layar from '../../components/Layar';
 import { T, Tombol, Kerangka } from '../../components/ui';
 import { Langkah, Avatar } from '../../components/booking';
-import { usePesanan } from '../../lib/kait';
+import { usePesanan, teruskan } from '../../lib/kait';
 import Ikon from '../../components/Ikon';
 import Pola from '../../components/Pola';
 
@@ -19,15 +19,15 @@ export function generateMetadata() {
 }
 
 export default function PilihKapster() {
-  const { siap, layanan, tambah, p, q } = usePesanan();
+  const { siap, layanan, p, q, untuk, privat, namaUntuk } = usePesanan();
   const sekarang = useToko((s) => s.sekarang);
   const bookings = useToko((s) => s.bookings);
   const [pilih, setPilih] = useState('semua');
   useEffect(() => {
-    if (q.kapster && kapsterUntuk(layanan || '').some((k) => k.id === String(q.kapster))) setPilih(String(q.kapster));
-  }, [q.kapster, layanan]);
+    if (q.kapster && kapsterUntuk(layanan || '', privat).some((k) => k.id === String(q.kapster))) setPilih(String(q.kapster));
+  }, [q.kapster, layanan, privat]);
 
-  const daftar = layanan ? kapsterUntuk(layanan) : [];
+  const daftar = layanan ? kapsterUntuk(layanan, privat) : [];
   const hIni = hariKe(sekarang);
   const terdekat = useMemo(() => {
     if (!siap || !layanan) return {};
@@ -39,7 +39,7 @@ export default function PilihKapster() {
 
   const teksTerdekat = (s) => (s ? `Paling cepat ${(sebutanHari(s.h, hIni) || HARI[hariPekan(s.h)]).toLowerCase()} ${jam(s.menit)}` : 'Penuh 2 pekan ke depan');
   const lanjut = () =>
-    router.push({ pathname: '/booking/waktu', params: { layanan, kapster: pilih, ...(tambah.length ? { tambah: tambah.join(',') } : {}) } });
+    router.push({ pathname: '/booking/waktu', params: { layanan, kapster: pilih, ...teruskan(q) } });
 
   if (siap && !layanan) return <TanpaLayanan />;
 
@@ -53,7 +53,9 @@ export default function PilihKapster() {
     >
       {siap ? (
         <T lembut>
-          Untuk <T style={[F.b, { color: W.tinta }]}>{p.item.map((l) => l.nama).join(' + ')}</T> · {durasi(p.durasi)}
+          <T style={[F.b, { color: W.tinta }]}>{p.item.map((l) => l.nama).join(' + ')}</T> · {durasi(p.durasi)}
+          {untuk !== 'saya' ? ` · atas nama ${namaUntuk}${untuk === 'anak' ? ' (anak)' : ''}` : ''}
+          {privat ? ' · ruang privat' : ''}
         </T>
       ) : (
         <Kerangka tinggi={22} />
@@ -124,7 +126,7 @@ export function TanpaLayanan() {
 
 const st = StyleSheet.create({
   opsi: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: R.besar, backgroundColor: W.putih, borderWidth: 1.5, borderColor: W.garis },
-  opsiAktif: { borderColor: W.marun, backgroundColor: W.krem },
+  opsiAktif: { borderColor: W.marun, backgroundColor: W.marunMuda },
   semua: { width: 60, height: 60, borderRadius: 30, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   semuaDalam: { width: 44, height: 44, borderRadius: 22, backgroundColor: W.marun, alignItems: 'center', justifyContent: 'center' },
   radio: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: W.garisTegas, alignItems: 'center', justifyContent: 'center' },

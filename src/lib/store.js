@@ -1,10 +1,11 @@
 import { useSyncExternalStore } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { layananById, kapsterById, pengingatById, CAP_PENUH, NILAI_HADIAH, BATAS_UBAH_MENIT, kapsterUntuk } from './data';
-import { hariKe, pada, menitKe, MENIT_MS, jamDari, tanggal, hariPekan } from './waktu';
-import { kapsterKosong, jadwalKapster } from './slot';
+import { layananById, kapsterById, pengingatById, CAP_PENUH, NILAI_HADIAH, BATAS_UBAH_MENIT, CHECKIN_SEBELUM, CHECKIN_SESUDAH, ANTRE_DETIK_PER_ORANG, KAPSTER, kapsterUntuk } from './data';
+import { hariKe, pada, menitKe, MENIT_MS, jamDari, jam, tanggal, hariPekan } from './waktu';
+import { kapsterKosong, jadwalKapster, kondisiAntre, pilihOtomatis } from './slot';
 
-const KUNCI = 'kursi-putar:v1';
+// v2 (23 Okt): untuk siapa, check-in, antre datang langsung, panduan, notifikasi contoh lebih lengkap.
+const KUNCI = 'kursi-putar:v2';
 
 const AWAL = {
   siap: false,
@@ -14,6 +15,8 @@ const AWAL = {
   favorit: [],
   notif: [],
   hadiahDipakai: 0,
+  antre: null,
+  panduanTutup: false,
   banner: null,
 };
 
@@ -27,8 +30,8 @@ function ubah(next, simpan = true) {
 }
 
 function tulis() {
-  const { profil, bookings, favorit, notif, hadiahDipakai } = state;
-  AsyncStorage.setItem(KUNCI, JSON.stringify({ v: 1, profil, bookings, favorit, notif, hadiahDipakai })).catch(() => {});
+  const { profil, bookings, favorit, notif, hadiahDipakai, antre, panduanTutup } = state;
+  AsyncStorage.setItem(KUNCI, JSON.stringify({ v: 2, profil, bookings, favorit, notif, hadiahDipakai, antre, panduanTutup })).catch(() => {});
 }
 
 function langganan(f) {
@@ -70,7 +73,14 @@ export function hitungPesanan(layananId, tambahan = []) {
 }
 
 export const capTerkumpul = (s) => s.bookings.filter((b) => b.status === 'selesai').length - s.hadiahDipakai * CAP_PENUH;
-export const bisaUbah = (b, sekarang) => b.status === 'aktif' && b.mulai - sekarang > BATAS_UBAH_MENIT * MENIT_MS;
+export const bisaUbah = (b, sekarang) => b.status === 'aktif' && !b.hadir && b.mulai - sekarang > BATAS_UBAH_MENIT * MENIT_MS;
+/** Jendela "Saya sudah sampai": 30 menit sebelum sampai 15 menit sesudah jam mulai. */
+export const jendelaCheckin = (b) => [b.mulai - CHECKIN_SEBELUM * MENIT_MS, b.mulai + CHECKIN_SESUDAH * MENIT_MS];
+export const bisaCheckin = (b, sekarang) => {
+  const [a, z] = jendelaCheckin(b);
+  return b.status === 'aktif' && !b.hadir && sekarang >= a && sekarang <= z;
+};
+export const atasNama = (b) => (b.untuk && b.untuk.jenis === 'anak' ? `${b.nama} (anak)` : b.nama);
 
 // ---------- data contoh (relatif terhadap hari ini) ----------
 function cariSlot(kapsterId, h, mulaiDari, durasi, bookings) {
@@ -92,7 +102,7 @@ function buatContoh(now) {
     const mulai = pada(h, menit);
     return {
       layanan, tambahan, kapster, mulai, durasi: p.durasi, total: p.total, status,
-      dibuat: mulai - 2 * 86400e3, nama: 'Ardi', catatan: '', pengingat: ['1d'], terkirim: ['1d'],
+      dibuat: mulai - 2 * 86400e3, nama: 'Ardi', untuk: { jenis: 'saya' }, catatan: '', pengingat: ['1d'], terkirim: ['1d'],
       ...(status === 'batal' ? { alasan: 'Ada acara keluarga', dibatalkan: mulai - 86400e3 } : {}),
     };
   };
@@ -113,23 +123,65 @@ function buatContoh(now) {
     const p = hitungPesanan('fade-taper');
     bookings.unshift({
       kode: 'KP7K2Q', layanan: 'fade-taper', tambahan: [], kapster: 'raka', mulai: pada(h, m), durasi: p.durasi, total: p.total,
-      status: 'aktif', dibuat: now - 26 * 3600e3, nama: 'Ardi', catatan: 'Samping tipis, atas tetap agak panjang.',
+      status: 'aktif', dibuat: pada(hIni - 1, 19 * 60 + 20), nama: 'Ardi', untuk: { jenis: 'saya' }, catatan: 'Mid fade · atas 4 cm',
       pengingat: ['1d', '2h'], terkirim: [],
     });
     break;
   }
   const akanDatang = bookings.find((b) => b.status === 'aktif');
+  // Notifikasi contoh: semua di jam wajar (08–20) dan tidak ada yang "dari masa depan".
+  const hariTerakhir = (hp, menit) => {
+    for (let h = hIni; h > hIni - 8; h--) if (hariPekan(h) === hp && pada(h, menit) < now) return pada(h, menit);
+    return null;
+  };
+  const mIni = menitKe(now);
+  const hKosong = mIni >= 9 * 60 + 5 ? hIni : hIni - 1;
+  let kosong = null;
+  for (const id of ['raka', 'bayu', 'wiryo']) {
+    const m = cariSlot(id, hKosong, 17 * 60, 30, bookings);
+    if (m != null && m <= 20 * 60) {
+      kosong = { id, m };
+      break;
+    }
+  }
+  const capTerakhir = riwayat[0];
+  const digeser = riwayat[2];
   const notif = [
     akanDatang && {
-      id: 'n-contoh-1', waktu: now - 26 * 3600e3, kode: akanDatang.kode, dibaca: false, jenis: 'tersimpan',
+      id: 'n-contoh-1', waktu: akanDatang.dibuat, kode: akanDatang.kode, dibaca: false, jenis: 'tersimpan',
       judul: 'Booking tersimpan', isi: `Fade & Taper dengan Raka, ${tanggal(akanDatang.mulai, { pendek: true })} pukul ${jamDari(akanDatang.mulai)} WIB.`,
     },
-    {
-      id: 'n-contoh-2', waktu: riwayat[0].mulai + 50 * MENIT_MS, kode: riwayat[0].kode, dibaca: true, jenis: 'cap',
-      judul: 'Kunjungan tercatat', isi: 'Terima kasih sudah datang. Satu cap masuk ke kartumu.',
+    kosong && {
+      id: 'n-contoh-kosong', waktu: pada(hKosong, 9 * 60 + 5), dibaca: false, jenis: 'info',
+      judul: `Kursi ${kapsterById[kosong.id].nama} kosong ${jam(kosong.m)}`,
+      isi: `${hKosong === hIni ? 'Hari ini' : 'Kemarin'} masih ada jam kosong ${jam(kosong.m)} untuk pangkas 30 menit. Booking dari aplikasi supaya tidak antre.`,
     },
-  ].filter(Boolean);
-  return { profil: { nama: 'Ardi', pengingat: ['1d', '2h'] }, bookings, favorit: ['fade-taper', 'jenggot'], notif, hadiahDipakai: 0 };
+    hariTerakhir(1, 19 * 60) && {
+      id: 'n-contoh-selasa', waktu: hariTerakhir(1, 19 * 60), dibaca: true, jenis: 'info',
+      judul: 'Besok Selasa outlet tutup', isi: 'Kursi istirahat sehari. Booking untuk Rabu sudah bisa dari sekarang.',
+    },
+    hariTerakhir(4, 19 * 60) && {
+      id: 'n-contoh-jumat', waktu: hariTerakhir(4, 19 * 60), dibaca: true, jenis: 'info',
+      judul: 'Jumat buka 13.00', isi: 'Kami buka setelah salat Jumat dan istirahat sebentar saat magrib (18.00–18.30).',
+    },
+    {
+      id: 'n-contoh-cap', waktu: capTerakhir.mulai + capTerakhir.durasi * MENIT_MS + 5 * MENIT_MS, kode: capTerakhir.kode, dibaca: true, jenis: 'cap',
+      judul: 'Cap ke-4 masuk', isi: 'Terima kasih sudah datang. Dua kunjungan lagi untuk potongan Rp45.000.',
+    },
+    {
+      id: 'n-contoh-h1', waktu: capTerakhir.mulai - 86400e3, kode: capTerakhir.kode, dibaca: true, jenis: 'pengingat',
+      judul: 'Pengingat: 1 hari lagi', isi: `Fade & Taper dengan Raka besok pukul ${jamDari(capTerakhir.mulai)} WIB. Datang 10 menit lebih awal, ya.`,
+    },
+    {
+      id: 'n-contoh-geser', waktu: digeser.mulai - 3 * 3600e3, kode: digeser.kode, dibaca: true, jenis: 'ubah',
+      judul: 'Jadwal digeser outlet', isi: `Bayu minta jadwalmu mundur 15 menit karena pelanggan sebelumnya molor. Kini pukul ${jamDari(digeser.mulai)} WIB.`,
+    },
+    {
+      id: 'n-contoh-batal', waktu: riwayat[1].dibatalkan, kode: riwayat[1].kode, dibaca: true, jenis: 'batal',
+      judul: 'Booking dibatalkan', isi: `Jadwal ${tanggal(riwayat[1].mulai, { pendek: true })} pukul ${jamDari(riwayat[1].mulai)} WIB sudah dilepas untuk pelanggan lain.`,
+    },
+  ].filter((n) => n && n.waktu < now);
+  return { profil: { nama: 'Ardi', pengingat: ['1d', '2h'] }, bookings, favorit: ['fade-taper', 'jenggot'], notif, hadiahDipakai: 0, antre: null, panduanTutup: false };
 }
 
 // ---------- siklus: muat, detak waktu, pengingat ----------
@@ -143,7 +195,7 @@ export async function muat() {
     const s = await AsyncStorage.getItem(KUNCI);
     if (s) data = JSON.parse(s);
   } catch {}
-  if (!data || data.v !== 1) data = buatContoh(now);
+  if (!data || data.v !== 2) data = buatContoh(now);
   state = { ...state, ...data, siap: true, sekarang: now };
   periksa(now, { diam: true });
   pendengar.forEach((f) => f());
@@ -172,13 +224,28 @@ export function periksa(now = Date.now(), { diam = false } = {}) {
     notifBaru.push(notifPengingat(b, now, terdekat));
     return { ...b, terkirim: [...b.terkirim, ...jatuh] };
   });
+  let antre = state.antre;
+  if (antre && antre.status === 'menunggu') {
+    const jalan = Math.max(0, now - antre.palingCepat);
+    if (jalan >= (antre.depanAwal * ANTRE_DETIK_PER_ORANG + 12) * 1000) {
+      berubah = true;
+      antre = { ...antre, status: 'dipanggil', dipanggil: now };
+      notifBaru.push({
+        id: 'n-antre-' + antre.nomor + '-' + now, waktu: now, dibaca: false, jenis: 'antre', tautan: '/antre',
+        judul: `Giliranmu! Nomor ${antre.nomor}`, isi: `Silakan ke kursi ${kapsterById[antre.kapster].nama}. ${layananById[antre.layanan].nama} atas nama ${antre.nama}.`,
+      });
+    }
+  }
   if (!berubah) {
     if (now - state.sekarang >= 15e3) ubah({ sekarang: now }, false);
     return;
   }
   const banner = !diam && notifBaru.length ? notifBaru[notifBaru.length - 1] : state.banner;
-  ubah({ sekarang: now, bookings, notif: [...notifBaru, ...state.notif].slice(0, 40), banner });
+  ubah({ sekarang: now, bookings, antre, notif: [...notifBaru, ...state.notif].slice(0, 40), banner });
 }
+
+/** Detak manual (layar antre memperbarui tiap beberapa detik). */
+export const detak = () => periksa(Date.now());
 
 function notifPengingat(b, now, id, contoh = false) {
   const l = layananById[b.layanan];
@@ -191,26 +258,26 @@ function notifPengingat(b, now, id, contoh = false) {
 }
 
 // ---------- aksi ----------
-export function buatBooking({ layanan, tambahan = [], kapster, mulai, nama, catatan, pengingat, otomatis, pakaiHadiah }) {
+export function buatBooking({ layanan, tambahan = [], kapster, mulai, nama, catatan, pengingat, otomatis, pakaiHadiah, untuk = { jenis: 'saya' } }) {
   const p = hitungPesanan(layanan, tambahan);
   const kode = kodeBaru(state.bookings);
   const now = Date.now();
   const potongan = pakaiHadiah ? Math.min(NILAI_HADIAH, p.total) : 0;
   const b = {
     kode, layanan, tambahan, kapster, mulai, durasi: p.durasi, total: p.total - potongan, potongan,
-    status: 'aktif', dibuat: now, nama: nama.trim(), catatan: catatan.trim(), pengingat, terkirim: [], otomatis: !!otomatis,
+    status: 'aktif', dibuat: now, nama: nama.trim(), untuk, catatan: catatan.trim(), pengingat, terkirim: [], otomatis: !!otomatis,
   };
   // Pengingat yang waktunya sudah lewat saat booking dibuat tidak dikirim.
   b.terkirim = pengingat.filter((id) => now >= mulai - pengingatById[id].menit * MENIT_MS);
   const n = {
     id: 'n-' + kode + '-baru', waktu: now, kode, dibaca: false, jenis: 'tersimpan', judul: 'Booking tersimpan',
-    isi: `${layananById[layanan].nama} dengan ${kapsterById[kapster].nama}, ${tanggal(mulai, { pendek: true })} pukul ${jamDari(mulai)} WIB.`,
+    isi: `${layananById[layanan].nama} dengan ${kapsterById[kapster].nama}, ${tanggal(mulai, { pendek: true })} pukul ${jamDari(mulai)} WIB, atas nama ${atasNama(b)}.`,
   };
   ubah({
     bookings: [b, ...state.bookings],
     notif: [n, ...state.notif],
     hadiahDipakai: state.hadiahDipakai + (pakaiHadiah ? 1 : 0),
-    profil: { ...state.profil, nama: nama.trim() || state.profil.nama },
+    profil: untuk.jenis === 'saya' ? { ...state.profil, nama: nama.trim() || state.profil.nama } : state.profil,
   });
   return kode;
 }
@@ -266,6 +333,63 @@ export function kirimContoh(kode) {
   const n = notifPengingat(b, Date.now(), 'contoh', true);
   ubah({ notif: [n, ...state.notif].slice(0, 40), banner: n });
 }
+
+export function checkIn(kode) {
+  const now = Date.now();
+  const b = state.bookings.find((x) => x.kode === kode);
+  if (!b) return;
+  const n = {
+    id: 'n-' + kode + '-hadir', waktu: now, kode, dibaca: false, jenis: 'hadir', judul: 'Kedatanganmu tercatat',
+    isi: `Silakan duduk di ruang tunggu. ${kapsterById[b.kapster].nama} memanggil sesuai jadwal pukul ${jamDari(b.mulai)} WIB.`,
+  };
+  ubah({ bookings: state.bookings.map((x) => (x.kode === kode ? { ...x, hadir: now } : x)), notif: [n, ...state.notif], banner: n });
+}
+
+// ---------- antre datang langsung ----------
+export function ambilAntre({ layanan, nama, untuk = { jenis: 'saya' } }) {
+  const now = Date.now();
+  const k = kondisiAntre(now, state.bookings);
+  if (!k.terima) return null;
+  const h = hariKe(now);
+  const bisa = kapsterUntuk(layanan).filter((x) => jadwalKapster(x, h));
+  const kosongIds = k.kursi.filter((x) => x.status === 'kosong' && bisa.some((b) => b.id === x.kapster)).map((x) => x.kapster);
+  const kapster = kosongIds[0] || pilihOtomatis((bisa.length ? bisa : KAPSTER).map((x) => x.id), h);
+  const nomorDasar = 3 + Math.floor(Math.max(0, menitKe(now) - 540) / 14);
+  const palingCepat = k.awal && k.berikut ? pada(k.berikut.h, k.berikut.menit) : now;
+  const antre = {
+    nomor: 'A' + String(nomorDasar + k.menunggu + 1).padStart(2, '0'), layanan, nama: nama.trim() || state.profil.nama, untuk, kapster,
+    diambil: now, palingCepat, depanAwal: k.menunggu, perkiraan: k.perkiraan, status: 'menunggu',
+  };
+  const n = {
+    id: 'n-antre-ambil-' + now, waktu: now, dibaca: true, jenis: 'antre', tautan: '/antre', judul: `Nomor antre ${antre.nomor}`,
+    isi: `${k.menunggu ? `${k.menunggu} orang sebelum kamu` : 'Kamu yang berikutnya'} · perkiraan ±${k.perkiraan} menit.`,
+  };
+  ubah({ antre, notif: [n, ...state.notif].slice(0, 40) });
+  return antre;
+}
+
+export function batalAntre() {
+  if (!state.antre) return;
+  const now = Date.now();
+  const n = { id: 'n-antre-batal-' + now, waktu: now, dibaca: true, jenis: 'batal', tautan: '/antre', judul: `Antre ${state.antre.nomor} dibatalkan`, isi: 'Nomormu dilepas. Kamu bisa ambil nomor lagi kapan saja selama outlet buka.' };
+  ubah({ antre: null, notif: [n, ...state.notif].slice(0, 40) });
+}
+
+/** Simulasi selesai dilayani: dicatat sebagai kunjungan (masuk riwayat & kartu cap). */
+export function selesaiAntre() {
+  const a = state.antre;
+  if (!a) return;
+  const now = Date.now();
+  const p = hitungPesanan(a.layanan);
+  const b = {
+    kode: kodeBaru(state.bookings), layanan: a.layanan, tambahan: [], kapster: a.kapster, mulai: a.dipanggil || now, durasi: p.durasi, total: p.total,
+    status: 'selesai', dibuat: a.diambil, nama: a.nama, untuk: a.untuk, catatan: '', pengingat: [], terkirim: [], antre: a.nomor,
+  };
+  const n = { id: 'n-' + b.kode + '-cap', waktu: now, kode: b.kode, dibaca: false, jenis: 'cap', judul: 'Kunjungan tercatat', isi: `Antre ${a.nomor} selesai. Satu cap masuk ke kartumu.` };
+  ubah({ antre: null, bookings: [b, ...state.bookings], notif: [n, ...state.notif].slice(0, 40) });
+}
+
+export const tutupPanduan = (tutup = true) => ubah({ panduanTutup: tutup });
 
 export const tutupBanner = () => ubah({ banner: null }, false);
 export const bacaSemua = () => ubah({ notif: state.notif.map((n) => (n.dibaca ? n : { ...n, dibaca: true })) });

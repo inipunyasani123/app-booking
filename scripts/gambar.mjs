@@ -4,14 +4,14 @@
 import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { tegelSvg } from '../src/components/pola-data.js';
+import { kulitSvg } from '../src/components/pola-data.js';
 
 const AKAR = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const IMG = path.join(AKAR, 'public/img');
 const CACHE = path.join(AKAR, '.cache/foto');
 const UA = 'PintuWebDemo/1.0 (https://www.pintuweb.id; cs@pintuweb.id)';
 
-const W = { kertas: '#F4EEE3', kertasTua: '#EAE0CF', putih: '#FFFCF6', tinta: '#241A1B', marun: '#7A1F2B', marunTua: '#5A1520', mint: '#D3E8DC', hijau: '#1E5442', kuningan: '#B8853A', krem: '#FFF6E6', garis: '#DCCFBC' };
+const W = { kertas: '#E3EFE8', kertasTua: '#D2E5DA', putih: '#FAFDFB', tinta: '#241A1B', marun: '#7A1F2B', marunTua: '#5A1520', mint: '#C2DFCD', hijau: '#1E5442', kuningan: '#B8853A', krem: '#FFF6E6', garis: '#C6DBCF' };
 
 // ---------- ilustrasi kapster ----------
 const tubuh = ({ kulit, kaos, celemek, tali = celemek, saku = W.kuningan }) => `
@@ -73,6 +73,72 @@ async function kapster() {
   }
 }
 
+// ---------- katalog gaya: siluet kepala tampak samping, tanpa wajah ----------
+const RAMBUT = '#2A1D18';
+const fade = (id, stops) => `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${stops.map(([o, a]) => `<stop offset="${o}" stop-color="${RAMBUT}" stop-opacity="${a}"/>`).join('')}</linearGradient>`;
+// Rambut samping = bagian belakang kepala sampai garis pelipis, dipotong mengikuti kontur kepala.
+const SISI = 'M30 34H124C118 66 114 100 121 146H30Z';
+const dasar = (skala = 1) => `<g transform="translate(100 112) scale(${skala}) translate(-100 -112)">
+  <defs><clipPath id="kepala"><ellipse cx="102" cy="92" rx="44" ry="54"/></clipPath></defs>
+  <path d="M36 204c8-30 34-46 64-46s56 16 64 46z" fill="${W.marun}"/>
+  <path d="M60 176c10-8 24-12 40-12s30 4 40 12" stroke="${W.krem}" stroke-width="4" fill="none" opacity=".7"/>
+  <rect x="84" y="124" width="34" height="40" rx="14" fill="#B07A55"/>
+  <ellipse cx="102" cy="92" rx="44" ry="54" fill="#C8916A"/>`;
+const telinga = `<ellipse cx="90" cy="100" rx="8" ry="12" fill="#B07A55"/><path d="M88 94c3 2 4 6 2 10" stroke="#9A6847" stroke-width="2" fill="none"/></g>`;
+const sisi = (isi) => `<path d="${SISI}" fill="${isi}" clip-path="url(#kepala)"/>`;
+const ATAS = 'M58 86C56 52 78 36 104 36c28 0 46 18 44 44-8-10-24-14-44-14-22 0-38 8-46 20z';
+const GAYA_SVG = {
+  'fade-rendah': () => `<defs>${fade('f', [[0, 0.95], [0.55, 0.92], [0.8, 0.25], [0.9, 0]])}</defs>${dasar()}${sisi('url(#f)')}<path d="${ATAS}" fill="${RAMBUT}"/>${telinga}`,
+  'mid-fade': () => `<defs>${fade('f', [[0, 0.95], [0.38, 0.85], [0.6, 0.15], [0.7, 0]])}</defs>${dasar()}${sisi('url(#f)')}<path d="${ATAS}" fill="${RAMBUT}"/>${telinga}`,
+  taper: () => `<defs>${fade('f', [[0, 0.96], [0.75, 0.94], [0.9, 0.35], [1, 0]])}</defs>${dasar()}${sisi('url(#f)')}<path d="M56 92C54 52 78 34 104 34c30 0 48 18 46 46-8-10-26-14-46-14-24 0-40 10-48 26z" fill="${RAMBUT}"/>${telinga}`,
+  crop: () => `<defs>${fade('f', [[0, 0.95], [0.4, 0.7], [0.62, 0]])}</defs>${dasar()}${sisi('url(#f)')}
+    <path d="M58 84C56 50 78 36 104 36c24 0 42 12 46 30l-6 2 4 6-8 0 2 6-8-2 0 6-8-4c-10-6-24-8-40-6-14 2-24 6-28 10z" fill="${RAMBUT}"/>
+    <path d="M78 46l6 8M92 42l5 9M106 40l4 9M120 42l3 9" stroke="#4A382F" stroke-width="3" stroke-linecap="round"/>${telinga}`,
+  'belah-pinggir': () => `${dasar()}${sisi(RAMBUT)}
+    <path d="M56 104C50 56 74 32 104 32c32 0 52 20 48 50-10-14-32-20-54-18-20 2-34 12-42 40z" fill="${RAMBUT}"/>
+    <path d="M70 52c12-10 30-14 46-12" stroke="#6A5448" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M100 46c18-2 34 4 42 16" stroke="#5A463C" stroke-width="5" fill="none" stroke-linecap="round" opacity=".6"/>${telinga}`,
+  undercut: () => `${dasar()}<g opacity=".24">${sisi(RAMBUT)}</g>
+    <path d="M62 74C64 40 92 22 124 26c22 3 36 18 32 38-16-12-42-14-64-10-14 2-24 10-30 20z" fill="${RAMBUT}"/>
+    <path d="M90 34c18-6 40-4 56 8" stroke="#5A463C" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>${telinga}`,
+  cepak: () => `${dasar()}<g opacity=".86">${sisi(RAMBUT)}<path d="M58 100C54 58 76 40 102 40c28 0 46 18 44 42-6-4-16-6-24-6H72c-8 4-12 14-14 24z" fill="${RAMBUT}"/></g>${telinga}`,
+  'pangkas-anak': () => `<defs>${fade('f', [[0, 0.95], [0.7, 0.9], [0.85, 0]])}</defs>${dasar(0.84)}${sisi('url(#f)')}
+    <path d="M58 92C56 54 78 40 102 40c26 0 44 16 44 40-10 2-20 2-28-2-10 6-26 8-40 6-8 0-14 4-20 8z" fill="#3B2418"/>
+    <path d="M118 76c8 2 16 2 26 0" stroke="#5C3A28" stroke-width="3" fill="none" stroke-linecap="round"/>${telinga}`,
+};
+
+async function gaya() {
+  for (const [id, f] of Object.entries(GAYA_SVG)) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="${W.mint}"/><circle cx="150" cy="40" r="60" fill="#fff" opacity=".35"/>${f()}</svg>`;
+    await fs.writeFile(path.join(AKAR, `design/gaya-${id}.svg`), svg);
+    await sharp(Buffer.from(svg)).resize(192).webp({ quality: 86 }).toFile(path.join(IMG, `gaya-${id}.webp`));
+  }
+}
+
+// ---------- keadaan kosong: kursi pangkas kosong + tiang pangkas ----------
+async function kursiKosong() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 200 200">
+  <defs><clipPath id="tiang"><rect x="156" y="52" width="18" height="92" rx="9"/></clipPath></defs>
+  <circle cx="100" cy="104" r="92" fill="${W.mint}"/>
+  <ellipse cx="96" cy="180" rx="50" ry="9" fill="#8FA399"/>
+  <rect x="88" y="142" width="14" height="38" rx="4" fill="#B9C6BF"/><rect x="84" y="164" width="22" height="8" rx="3" fill="#A2B2AA"/>
+  <rect x="50" y="116" width="92" height="28" rx="12" fill="${W.marun}"/>
+  <path d="M60 122h72" stroke="${W.marunTua}" stroke-width="2"/>
+  <rect x="44" y="50" width="34" height="76" rx="14" fill="${W.marun}" transform="rotate(-8 61 88)"/>
+  <g transform="rotate(-8 61 88)" stroke="${W.marunTua}" stroke-width="2"><path d="M48 66l26 18M74 66 48 84M48 92l26 18M74 92l-26 18"/></g>
+  <g fill="${W.krem}" transform="rotate(-8 61 88)"><circle cx="61" cy="75" r="2.4"/><circle cx="61" cy="101" r="2.4"/></g>
+  <rect x="44" y="30" width="30" height="16" rx="7" fill="${W.marunTua}" transform="rotate(-8 59 38)"/><rect x="56" y="44" width="5" height="10" fill="#B9C6BF"/>
+  <rect x="76" y="104" width="60" height="9" rx="4.5" fill="#DDE4E0"/><rect x="128" y="110" width="6" height="12" fill="#B9C6BF"/>
+  <path d="M138 142l18 22h-20" fill="none" stroke="#B9C6BF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <g clip-path="url(#tiang)"><rect x="150" y="40" width="30" height="110" fill="${W.krem}"/>
+  ${[0, 1, 2, 3, 4, 5, 6].map((i) => `<path d="M150 ${60 + i * 16}l30-18v8l-30 18z" fill="${i % 2 ? W.hijau : W.marun}"/>`).join('')}</g>
+  <rect x="152" y="44" width="26" height="10" rx="5" fill="${W.kuningan}"/><rect x="152" y="142" width="26" height="10" rx="5" fill="${W.kuningan}"/>
+  <circle cx="165" cy="38" r="7" fill="${W.krem}" stroke="${W.kuningan}" stroke-width="2"/>
+  </svg>`;
+  await fs.writeFile(path.join(AKAR, 'design/kursi-kosong.svg'), svg);
+  await sharp(Buffer.from(svg)).resize(240).webp({ quality: 88 }).toFile(path.join(IMG, 'kursi-kosong.webp'));
+}
+
 // ---------- peta ilustrasi ----------
 async function peta() {
   const pohon = (x, y, r = 11) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#2E6A56"/><circle cx="${x - 3}" cy="${y - 3}" r="${r * 0.45}" fill="#3F8068"/>`;
@@ -113,8 +179,8 @@ const glyphKursi = (warna, tebal = 34) => `<g fill="none" stroke="${warna}" stro
   <path d="M392 236h240a30 30 0 0 1 30 30v206H362V266a30 30 0 0 1 30-30z"/><path d="M302 472h420"/><path d="M302 472v104h420V472"/><path d="M512 576v140"/><path d="M392 760h240"/></g>`;
 
 async function ikon() {
-  const tegel = tegelSvg('marun', 256).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
-  const polaMarun = `<defs><pattern id="t" width="256" height="256" patternUnits="userSpaceOnUse"><svg width="256" height="256" viewBox="0 0 64 64">${tegel}</svg></pattern></defs>`;
+  const kulit = kulitSvg('marun', 40).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  const polaMarun = `<defs><pattern id="t" width="170.67" height="170.67" patternUnits="userSpaceOnUse"><g transform="scale(4.2667)">${kulit}</g></pattern></defs>`;
   const ikonPenuh = (ukuran = 1024, bulat = 0) => `<svg xmlns="http://www.w3.org/2000/svg" width="${ukuran}" height="${ukuran}" viewBox="0 0 1024 1024">${polaMarun}
     <rect width="1024" height="1024" rx="${bulat}" fill="url(#t)"/>
     <circle cx="512" cy="512" r="330" fill="${W.marun}"/><circle cx="512" cy="512" r="330" fill="none" stroke="${W.kuningan}" stroke-width="14"/>
@@ -221,6 +287,8 @@ await fs.mkdir(IMG, { recursive: true });
 await fs.mkdir(path.join(AKAR, 'design'), { recursive: true });
 const pilih = process.argv[2];
 if (!pilih || pilih === 'kapster') await kapster();
+if (!pilih || pilih === 'gaya') await gaya();
+if (!pilih || pilih === 'kursi') await kursiKosong();
 if (!pilih || pilih === 'peta') await peta();
 if (!pilih || pilih === 'ikon') await ikon();
 if (!pilih || pilih === 'foto') await foto();

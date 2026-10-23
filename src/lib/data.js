@@ -74,7 +74,8 @@ export const KAPSTER = [
     bio: 'Paling sering dicari untuk fade yang rapi. Suka menjelaskan cara menata sendiri di rumah.',
     libur: [3],
     layanan: ['pangkas-reguler', 'fade-taper', 'pangkas-klasik', 'jenggot', 'paket-lengkap'],
-    warna: '#D3E8DC',
+    gaya: ['fade-rendah', 'mid-fade', 'crop'],
+    warna: '#C2DFCD',
   },
   {
     id: 'bayu',
@@ -85,6 +86,7 @@ export const KAPSTER = [
     bio: 'Telaten dengan jenggot dan cukur handuk hangat. Cocok untuk yang ingin tampilan rapi gaya lama.',
     libur: [4],
     layanan: ['pangkas-reguler', 'fade-taper', 'pangkas-klasik', 'jenggot', 'paket-lengkap'],
+    gaya: ['belah-pinggir', 'taper', 'undercut'],
     warna: '#F1E0BC',
   },
   {
@@ -97,7 +99,8 @@ export const KAPSTER = [
     libur: [0],
     shift: [540, 1020],
     layanan: ['pangkas-reguler', 'pangkas-klasik', 'jenggot', 'pangkas-anak'],
-    warna: '#EAE0CF',
+    gaya: ['belah-pinggir', 'cepak', 'pangkas-anak'],
+    warna: '#E9DDC9',
   },
   {
     id: 'laras',
@@ -108,6 +111,8 @@ export const KAPSTER = [
     bio: 'Menangani pelanggan perempuan di ruang privat. Teliti menyesuaikan potongan dengan bentuk wajah.',
     libur: [1],
     layanan: ['potong-blow', 'creambath', 'hair-spa', 'pangkas-anak'],
+    gaya: ['pangkas-anak'],
+    perempuan: true,
     warna: '#F2DEDB',
   },
   {
@@ -120,13 +125,45 @@ export const KAPSTER = [
     libur: [5],
     shift: [720, 1260],
     layanan: ['potong-blow', 'creambath', 'hair-spa', 'pewarnaan', 'smoothing'],
-    warna: '#D3E8DC',
+    gaya: [],
+    perempuan: true,
+    warna: '#C2DFCD',
   },
 ];
 
 export const kapsterById = Object.fromEntries(KAPSTER.map((k) => [k.id, k]));
 
-export const kapsterUntuk = (layananId) => KAPSTER.filter((k) => k.layanan.includes(layananId));
+export const kapsterUntuk = (layananId, privat = false) => KAPSTER.filter((k) => k.layanan.includes(layananId) && (!privat || k.perempuan));
+
+// Layanan yang paling sering dipesan (lencana "Sering dipesan" di langkah 1).
+export const SERING = ['pangkas-reguler', 'fade-taper'];
+
+// Untuk siapa booking dibuat. Anak & ruang privat menyaring layanan dan penata.
+export const UNTUK = [
+  { id: 'saya', label: 'Saya sendiri', ket: 'Nama di karcis = namamu' },
+  { id: 'anak', label: 'Anak', ket: 'Pangkas anak, kursi khusus' },
+  { id: 'lain', label: 'Orang lain', ket: 'Adik, pasangan, orang tua' },
+];
+export const layananUntuk = (untuk, privat) =>
+  LAYANAN.filter((l) => l.kat !== 'tambahan').filter((l) => {
+    if (untuk === 'anak') return l.id === 'pangkas-anak';
+    if (privat) return KAPSTER.some((k) => k.perempuan && k.layanan.includes(l.id));
+    return true;
+  });
+
+// Katalog gaya (ilustrasi siluet buatan sendiri di public/img/gaya-<id>.webp).
+export const GAYA = [
+  { id: 'fade-rendah', nama: 'Fade rendah', ket: 'Gradasi mulai di atas telinga', layanan: 'fade-taper' },
+  { id: 'mid-fade', nama: 'Mid fade', ket: 'Gradasi naik sampai pelipis', layanan: 'fade-taper' },
+  { id: 'taper', nama: 'Taper', ket: 'Tipis di cambang & tengkuk saja', layanan: 'fade-taper' },
+  { id: 'crop', nama: 'Crop', ket: 'Atas pendek bertekstur, poni rata', layanan: 'pangkas-reguler' },
+  { id: 'belah-pinggir', nama: 'Belah pinggir', ket: 'Klasik disisir ke samping', layanan: 'pangkas-klasik' },
+  { id: 'undercut', nama: 'Undercut', ket: 'Samping tipis rata, atas panjang', layanan: 'pangkas-reguler' },
+  { id: 'cepak', nama: 'Cepak', ket: 'Pendek rata, gampang dirawat', layanan: 'pangkas-reguler' },
+  { id: 'pangkas-anak', nama: 'Pangkas anak', ket: 'Rapi, cepat, tidak menakutkan', layanan: 'pangkas-anak' },
+];
+export const gayaById = Object.fromEntries(GAYA.map((g) => [g.id, g]));
+export const PANJANG_ATAS = ['atas 2 cm', 'atas 4 cm', 'atas 6 cm', 'atas dirapikan saja'];
 
 export const PENGINGAT = [
   { id: '1d', menit: 1440, label: '1 hari sebelumnya' },
@@ -140,5 +177,12 @@ export const CAP_PENUH = 6;
 export const NILAI_HADIAH = 45000;
 
 export const BATAS_UBAH_MENIT = 60;
+// "Saya sudah sampai" aktif mulai 30 menit sebelum jadwal sampai 15 menit sesudahnya.
+export const CHECKIN_SEBELUM = 30;
+export const CHECKIN_SESUDAH = 15;
+// Antre datang langsung dibuka 15 menit sebelum outlet buka; simulasi maju 1 orang tiap 20 detik.
+export const ANTRE_BUKA_LEBIH_AWAL = 15;
+export const ANTRE_DETIK_PER_ORANG = 20;
+export const LAYANAN_ANTRE = ['pangkas-reguler', 'fade-taper', 'jenggot', 'pangkas-anak'];
 export const JEDA_PESAN_MENIT = 30;
 export const RENTANG_HARI = 14;

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { W, F, R, angkaTabel } from '../../lib/tema';
-import { KAPSTER, kapsterById, layananById, JAM_BUKA } from '../../lib/data';
+import { KAPSTER, kapsterById, layananById, JAM_BUKA, gayaById } from '../../lib/data';
 import { HARI, jam, hariKe, hariPekan, sebutanHari, HARI_PENDEK, durasi, rupiah } from '../../lib/waktu';
 import { useToko } from '../../lib/store';
 import { slotTerdekat } from '../../lib/slot';
@@ -52,7 +52,7 @@ export default function DetailKapster() {
       bawah={<Tombol label={`Booking dengan ${k.nama}`} href={{ pathname: '/booking', params: { layanan: utama, kapster: k.id } }} penuh />}
     >
       <View style={st.sampul}>
-        <Pola jenis="tegel" varian="mint" ukuran={56} />
+        <Pola jenis="kulit" varian="marun" ukuran={40} />
         <View style={st.potret}>
           <Gambar nama={`kapster-${k.id}.webp`} lebar={156} tinggi={156} bulat={78} alt={`Ilustrasi ${k.nama}, ${k.peran.toLowerCase()}`} prioritas />
         </View>
@@ -63,6 +63,28 @@ export default function DetailKapster() {
           <Lencana key={x}>{x}</Lencana>
         ))}
       </View>
+
+      {k.gaya.length ? (
+        <View style={{ gap: 8 }}>
+          <Judul level={2}>Gaya andalan</Judul>
+          <View style={st.gayaBaris} role="list">
+            {k.gaya.map((gid) => {
+              const g = gayaById[gid];
+              return (
+                <View key={gid} role="listitem" style={{ flex: 1 }}>
+                  <Taut href={{ pathname: '/booking/kapster', params: { layanan: g.layanan, kapster: k.id, gaya: g.id } }} gaya={({ pressed }) => [st.gaya, pressed && { backgroundColor: W.kertasTua }]}>
+                    <Gambar nama={`gaya-${g.id}.webp`} lebar={88} tinggi={88} bulat={14} />
+                    <T kecil style={[F.b, { textAlign: 'center' }]} numberOfLines={1}>
+                      {g.nama}
+                    </T>
+                  </Taut>
+                </View>
+              );
+            })}
+          </View>
+          <T kecil lembut>Ilustrasi gaya, bukan foto pelanggan. Ketuk untuk booking dengan catatan gaya terisi.</T>
+        </View>
+      ) : null}
 
       <Kartu style={{ gap: 10 }}>
         <Judul level={2}>Jam kosong terdekat</Judul>
@@ -134,8 +156,10 @@ export default function DetailKapster() {
 
 const st = StyleSheet.create({
   sampul: { height: 200, borderRadius: R.besar, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  potret: { width: 168, height: 168, borderRadius: 84, backgroundColor: W.krem, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: W.putih },
+  potret: { width: 168, height: 168, borderRadius: 84, backgroundColor: W.putih, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: '#D9A54E' },
   keahlian: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+  gayaBaris: { flexDirection: 'row', gap: 8 },
+  gaya: { alignItems: 'center', gap: 6, padding: 8, borderRadius: 16, backgroundColor: W.putih, borderWidth: 1, borderColor: W.garis },
   slot: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   slotItem: { minHeight: 56, borderRadius: 14, borderWidth: 1.5, borderColor: W.hijau, paddingHorizontal: 10, paddingVertical: 6, justifyContent: 'center' },
   slotJam: { ...F.display, fontSize: 20, lineHeight: 26, color: W.tinta },
