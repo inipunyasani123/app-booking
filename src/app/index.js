@@ -104,7 +104,8 @@ export default function Beranda() {
         </Taut>
       </View>
 
-      {siap && !panduanTutup ? (
+      {/* Dirender juga di HTML statis (bawaan belum ditutup) supaya tidak menggeser isi saat muncul. */}
+      {!panduanTutup ? (
         <View style={st.panduan}>
           <View style={st.panduanPita}>
             <Pola jenis="belang" varian="pangkas" lebarBelang={5} />

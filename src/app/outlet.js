@@ -42,14 +42,6 @@ export default function Outlet() {
         <T lembut>{OUTLET.patokan}. Alamat rekaan untuk demo.</T>
       </View>
 
-      <View style={st.peta}>
-        <Gambar nama="peta.webp" lebar="100%" tinggi={220} alt="Peta ilustrasi: Kursi Putar di Jl. Tegel Kuno, seberang taman kota, dekat perempatan dan toko bangunan" prioritas />
-        <View style={st.petaLabel}>
-          <Ikon nama="pin" ukuran={18} warna={W.marun} />
-          <T kecil style={F.b}>Peta ilustrasi, bukan peta sungguhan</T>
-        </View>
-      </View>
-
       <View style={{ gap: 8 }}>
         <Judul level={2}>Jam buka</Judul>
         <View style={st.tabel} role="table" aria-label="Jam buka outlet">
@@ -82,6 +74,14 @@ export default function Outlet() {
           })}
         </View>
         <T kecil lembut>Jumat buka setelah salat Jumat dan istirahat sebentar saat magrib. Semua jam dalam WIB.</T>
+      </View>
+
+      <View style={st.peta}>
+        <Gambar nama="peta.webp" lebar="100%" tinggi={220} alt="Peta ilustrasi: Kursi Putar di Jl. Tegel Kuno, seberang taman kota, dekat perempatan dan toko bangunan" />
+        <View style={st.petaLabel}>
+          <Ikon nama="pin" ukuran={18} warna={W.marun} />
+          <T kecil style={F.b}>Peta ilustrasi, bukan peta sungguhan</T>
+        </View>
       </View>
 
       <Kartu style={st.kontak}>

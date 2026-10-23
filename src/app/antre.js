@@ -39,6 +39,9 @@ export default function Antre() {
 
   return (
     <Layar kembali judul="Antre datang langsung" sub="Tanpa janji · nomor antre simulasi">
+      <T style={st.pengantar}>
+        Datang tanpa janji? Ambil nomor dari sini, pantau berapa orang sebelum kamu, lalu datang saat giliranmu hampir tiba. Kursi kosong dihitung dari jadwal kapster dan booking yang sudah masuk.
+      </T>
       {!siap ? (
         <Kerangka tinggi={260} />
       ) : antre ? (
@@ -245,6 +248,7 @@ function Tiket({ antre, sekarang, k }) {
 }
 
 const st = StyleSheet.create({
+  pengantar: { fontSize: 16, lineHeight: 24 },
   statusBaris: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   titikStatus: { width: 10, height: 10, borderRadius: 5 },
   ringkas: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: R.sedang, backgroundColor: W.mint },
