@@ -145,7 +145,7 @@ export function Karcis({ b, ringkas = false, lengkap = false, cetak = false, qr 
         </View>
       ) : null}
       {cetak && b.status === 'aktif' ? (
-        <Animated.View style={[st.cap, st.capCetak, { opacity: cap, transform: [{ rotate: '-9deg' }, { scale: cap.interpolate({ inputRange: [0, 1], outputRange: [1.6, 1] }) }] }]} aria-hidden>
+        <Animated.View style={[st.capCetak, { opacity: cap, transform: [{ rotate: '-9deg' }, { scale: cap.interpolate({ inputRange: [0, 1], outputRange: [1.6, 1] }) }] }]} aria-hidden>
           <Text style={[st.capTeks, { color: W.marunTua }]}>TERCATAT</Text>
         </Animated.View>
       ) : null}
@@ -377,7 +377,7 @@ const st = StyleSheet.create({
   qrBingkai: { padding: 6, backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: W.garisKarcis },
   kodeBesar: { ...F.display, fontSize: 36, lineHeight: 42, color: W.tinta, letterSpacing: 2 },
   cap: { position: 'absolute', right: 14, top: 44, borderWidth: 2.5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, transform: [{ rotate: '-9deg' }], backgroundColor: 'rgba(255,246,230,0.88)' },
-  capCetak: { borderColor: '#B8853A', top: undefined, bottom: 22, right: 16, backgroundColor: 'rgba(241,224,188,0.94)' },
+  capCetak: { position: 'absolute', right: 12, bottom: 10, borderWidth: 2.5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, borderColor: '#B8853A', backgroundColor: 'rgba(241,224,188,0.94)' },
   capTeks: { ...F.xb, fontSize: 16, lineHeight: 20, letterSpacing: 1.5 },
   langkahBaris: { flexDirection: 'row', gap: 6 },
   langkahRuas: { flex: 1, height: 8, borderRadius: 4, backgroundColor: W.kertasTua, overflow: 'hidden' },
