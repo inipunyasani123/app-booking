@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#C2DFCD"/><circle cx="150" cy="40" r="60" fill="#fff" opacity=".35"/><g transform="translate(100 112) scale(1) translate(-100 -112)">
-  <defs><clipPath id="kepala"><ellipse cx="102" cy="92" rx="44" ry="54"/></clipPath></defs>
-  <path d="M36 204c8-30 34-46 64-46s56 16 64 46z" fill="#7A1F2B"/>
-  <path d="M60 176c10-8 24-12 40-12s30 4 40 12" stroke="#FFF6E6" stroke-width="4" fill="none" opacity=".7"/>
-  <rect x="84" y="124" width="34" height="40" rx="14" fill="#B07A55"/>
-  <ellipse cx="102" cy="92" rx="44" ry="54" fill="#C8916A"/><path d="M30 34H124C118 66 114 100 121 146H30Z" fill="#2A1D18" clip-path="url(#kepala)"/>
-    <path d="M56 104C50 56 74 32 104 32c32 0 52 20 48 50-10-14-32-20-54-18-20 2-34 12-42 40z" fill="#2A1D18"/>
-    <path d="M70 52c12-10 30-14 46-12" stroke="#6A5448" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M100 46c18-2 34 4 42 16" stroke="#5A463C" stroke-width="5" fill="none" stroke-linecap="round" opacity=".6"/><ellipse cx="90" cy="100" rx="8" ry="12" fill="#B07A55"/><path d="M88 94c3 2 4 6 2 10" stroke="#9A6847" stroke-width="2" fill="none"/></g></svg>

@@ -1,6 +1,6 @@
 /** Gambar statis dari public/img. Di web langsung <img> supaya tampil sebelum JavaScript berjalan. */
 // Foto & peta punya varian 480w (scripts/gambar.mjs); avatar kapster cukup satu ukuran.
-const BERVARIAN = ['outlet.webp', 'alat.webp', 'salon.webp', 'peta.webp'];
+const BERVARIAN = ['outlet.webp', 'alat.webp', 'salon.webp', 'tambahan.webp', 'peta.webp'];
 
 export default function Gambar({ nama, lebar, tinggi, alt = '', bulat = 0, prioritas = false, style }) {
   const varian = BERVARIAN.includes(nama);

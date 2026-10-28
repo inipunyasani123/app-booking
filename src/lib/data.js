@@ -151,7 +151,7 @@ export const layananUntuk = (untuk, privat) =>
     return true;
   });
 
-// Katalog gaya (ilustrasi siluet buatan sendiri di public/img/gaya-<id>.webp).
+// Katalog gaya (foto CC0 potongan rambut tanpa wajah di public/img/gaya-<id>.webp).
 export const GAYA = [
   { id: 'fade-rendah', nama: 'Fade rendah', ket: 'Gradasi mulai di atas telinga', layanan: 'fade-taper' },
   { id: 'mid-fade', nama: 'Mid fade', ket: 'Gradasi naik sampai pelipis', layanan: 'fade-taper' },

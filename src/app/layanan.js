@@ -17,7 +17,7 @@ export function generateMetadata() {
 const FOTO = {
   pangkas: { nama: 'alat.webp', alt: 'Gunting, sisir, dan sikat pangkas tertata di meja kayu' },
   salon: { nama: 'salon.webp', alt: 'Ruang salon dengan kursi kulit cokelat dan cermin' },
-  tambahan: { nama: 'alat.webp', alt: 'Perlengkapan pangkas di meja kayu' },
+  tambahan: { nama: 'tambahan.webp', alt: 'Kuas cukur berbulu halus untuk busa cukur' },
 };
 
 export default function Layanan() {
@@ -92,7 +92,7 @@ export default function Layanan() {
       {kat === 'pangkas' ? (
         <View style={{ gap: 10 }}>
           <Judul level={2}>Belum tahu mau potong apa?</Judul>
-          <T kecil lembut>Pilih gaya; layanan yang pas dan catatan untuk kapster langsung terisi. Ilustrasi buatan sendiri, bukan foto pelanggan.</T>
+          <T kecil lembut>Pilih gaya; layanan yang pas dan catatan untuk kapster langsung terisi. Fotonya hanya memperlihatkan potongan rambut, tanpa wajah.</T>
           <View role="list" style={st.gayaGrid}>
             {GAYA.map((g) => (
               <View key={g.id} role="listitem" style={st.gayaSel}>

@@ -82,7 +82,7 @@ export default function DetailKapster() {
               );
             })}
           </View>
-          <T kecil lembut>Ilustrasi gaya, bukan foto pelanggan. Ketuk untuk booking dengan catatan gaya terisi.</T>
+          <T kecil lembut>Foto contoh gaya (hanya rambut), bukan pelanggan Kursi Putar. Ketuk untuk booking dengan catatan gaya terisi.</T>
         </View>
       ) : null}
 
