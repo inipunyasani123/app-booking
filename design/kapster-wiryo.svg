@@ -15,5 +15,4 @@
     <path d="M108 128c-2-36 20-56 52-56 34 0 54 20 52 56-4-14-14-26-44-28-24-1-40 6-52 22z" fill="#D9D3CA"/>
     <path d="M150 100c10-10 30-14 46-6" stroke="#bfb7ab" stroke-width="5" fill="none" stroke-linecap="round"/>
     <path d="M136 178c10-8 18-8 24-4 6-4 14-4 24 4-6 8-42 8-48 0z" fill="#D9D3CA"/>
-    <g fill="none" stroke="#3a2a20" stroke-width="4"><circle cx="138" cy="146" r="15"/><circle cx="182" cy="146" r="15"/><path d="M153 146h14M123 144l-14-4M197 144l14-4"/></g>
     <g fill="#B8853A"><circle cx="70" cy="290" r="4"/><circle cx="90" cy="270" r="4"/><circle cx="250" cy="290" r="4"/><circle cx="230" cy="270" r="4"/></g></svg>

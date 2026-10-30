@@ -42,11 +42,10 @@ const KAPSTER = {
     <path d="M120 82c14-22 46-30 72-18 14 6 22 18 22 30-16-14-40-20-62-14-14 4-24 2-32 2z" fill="#2c1d17"/>
     <path d="M106 150c2 44 26 66 54 66s52-22 54-66c-10 24-26 36-54 36s-44-12-54-36z" fill="#1d1310"/>
     <path d="M138 178c8-6 16-6 22-2 6-4 14-4 22 2-8 6-36 6-44 0z" fill="#1d1310"/>`,
-  wiryo: () => `${latar(W.kertasTua, '#fff')}${tubuh({ kulit: '#C08A62', kaos: '#3E5C7A', celemek: W.marun })}${kepala('#C08A62')}
+  wiryo: () => `${latar('#EAE0CF', '#fff')}${tubuh({ kulit: '#C08A62', kaos: '#3E5C7A', celemek: W.marun })}${kepala('#C08A62')}
     <path d="M108 128c-2-36 20-56 52-56 34 0 54 20 52 56-4-14-14-26-44-28-24-1-40 6-52 22z" fill="#D9D3CA"/>
     <path d="M150 100c10-10 30-14 46-6" stroke="#bfb7ab" stroke-width="5" fill="none" stroke-linecap="round"/>
     <path d="M136 178c10-8 18-8 24-4 6-4 14-4 24 4-6 8-42 8-48 0z" fill="#D9D3CA"/>
-    <g fill="none" stroke="#3a2a20" stroke-width="4"><circle cx="138" cy="146" r="15"/><circle cx="182" cy="146" r="15"/><path d="M153 146h14M123 144l-14-4M197 144l14-4"/></g>
     <g fill="${W.kuningan}"><circle cx="70" cy="290" r="4"/><circle cx="90" cy="270" r="4"/><circle cx="250" cy="290" r="4"/><circle cx="230" cy="270" r="4"/></g>`,
   laras: () => `${latar(W.marunMuda || '#F2DEDB', '#fff')}
     <path d="M58 330c4-62 40-100 102-102 62 2 98 40 102 102z" fill="#2E6A56"/>

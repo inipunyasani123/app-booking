@@ -4,7 +4,7 @@ Semua usaha, orang, dan alamat di demo ini rekaan.
 
 ## Ilustrasi buatan sendiri (tanpa wajah orang sungguhan)
 Dibuat dari SVG di `scripts/gambar.mjs` (salinan SVG di `design/`), dirender dengan sharp.
-- `kapster-raka.webp`, `kapster-bayu.webp`, `kapster-wiryo.webp`, `kapster-laras.webp`, `kapster-sekar.webp` — ilustrasi tokoh kapster/penata rekaan, tanpa fitur wajah.
+- `kapster-raka.webp`, `kapster-bayu.webp`, `kapster-wiryo.webp`, `kapster-laras.webp`, `kapster-sekar.webp` — ilustrasi tokoh kapster/penata rekaan, tanpa fitur wajah (30 Okt 2026: kacamata Pak Wiryo dihapus agar wajah benar-benar polos).
 - `peta.webp`, `peta-480.webp` — peta ilustrasi jalan rekaan (Jl. Tegel Kuno, Jl. Kenari, Jl. Kemuning); bukan peta sungguhan.
 - Ikon aplikasi & PWA (`assets/icon.png`, `public/icon-*.png`, `public/icon.svg`, `public/favicon.ico`, `public/apple-touch-icon.png`) dan motif jok kulit berkancing & belang tiang pangkas (`src/components/pola-data.js`).
 - `public/og.jpg` — komposisi tangkapan layar aplikasi ini sendiri.
